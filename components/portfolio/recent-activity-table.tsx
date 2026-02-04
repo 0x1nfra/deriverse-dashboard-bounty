@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils"
 
-// Mock activity data matching the mockup
+// Mock activity data
 const recentActivity = [
-  { type: "BUY", asset: "SOL", secondaryAsset: "BTC", amount: 2.5, secondaryAmount: 2.5, time: "10:30 AM" },
-  { type: "SELL", asset: "SOL", secondaryAsset: "ETH", amount: 0.1, secondaryAmount: 0.1, time: "10:30 AM" },
-  { type: "SELL", asset: "BTC", secondaryAsset: "BTC", amount: 0.1, secondaryAmount: 56.45, time: "10:50 AM" },
+  { type: "BUY", asset: "SOL/USD", amount: "50", value: "$4,925.00", time: "10:30 AM" },
+  { type: "SELL", asset: "BTC/USD", amount: "0.1", value: "$4,920.00", time: "10:15 AM" },
+  { type: "BUY", asset: "ETH/USD", amount: "2.0", value: "$4,900.00", time: "09:45 AM" },
+  { type: "SELL", asset: "SOL/USD", amount: "100", value: "$10,230.00", time: "09:20 AM" },
 ]
 
 export function RecentActivityTable() {
@@ -20,7 +21,7 @@ export function RecentActivityTable() {
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Asset</th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Secondary</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Value</th>
               <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Time</th>
             </tr>
           </thead>
@@ -29,28 +30,20 @@ export function RecentActivityTable() {
               <tr key={idx} className="hover:bg-secondary/30 transition-colors">
                 <td className="px-5 py-3">
                   <span className={cn(
-                    "text-sm font-medium",
-                    activity.type === "BUY" ? "text-success" : "text-destructive"
+                    "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold",
+                    activity.type === "BUY" ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
                   )}>
                     {activity.type}
                   </span>
                 </td>
-                <td className="px-5 py-3">
-                  <span className={cn(
-                    "text-sm font-medium",
-                    activity.type === "BUY" ? "text-success" : "text-destructive"
-                  )}>
-                    {activity.asset}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-sm font-mono text-foreground">
-                  {activity.secondaryAsset}
+                <td className="px-5 py-3 text-sm font-medium text-foreground">
+                  {activity.asset}
                 </td>
                 <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
                   {activity.amount}
                 </td>
-                <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
-                  {activity.secondaryAmount}
+                <td className="px-5 py-3 text-sm font-mono text-foreground">
+                  {activity.value}
                 </td>
                 <td className="px-5 py-3 text-sm text-muted-foreground text-right">
                   {activity.time}

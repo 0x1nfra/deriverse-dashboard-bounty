@@ -46,13 +46,13 @@ export function StrategyPerformanceTable() {
           <thead>
             <tr className="border-b border-border">
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Strategy Performance
+                Strategy
               </th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Trades
+                Total Trades
               </th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Trades
+                Winning
               </th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Win Rate
@@ -61,7 +61,7 @@ export function StrategyPerformanceTable() {
                 P&L
               </th>
               <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Average Return
+                Avg Return
               </th>
             </tr>
           </thead>
