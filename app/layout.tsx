@@ -1,12 +1,11 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Figtree } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { TopNavigation } from '@/components/top-navigation'
 import './globals.css'
 
-const _inter = Inter({ subsets: ["latin"] });
-const _jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
+const figtree = Figtree({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Deriverse - Trading Journal & Portfolio Analytics',
@@ -38,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="font-sans antialiased bg-background text-foreground min-h-screen">
+      <body className={`${figtree.className} antialiased bg-background text-foreground min-h-screen`}>
         <TopNavigation />
         <main className="pt-16">
           {children}

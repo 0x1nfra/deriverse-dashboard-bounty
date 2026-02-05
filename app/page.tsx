@@ -12,6 +12,7 @@ import { AnalyticsTabContent } from "@/components/portfolio/tabs/analytics-tab"
 import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab"
 import { PositionsTabContent } from "@/components/portfolio/tabs/positions-tab"
 import { HistoryTabContent } from "@/components/portfolio/tabs/history-tab"
+import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab"
 
 // Sub-tabs configuration
 const subTabs = [
@@ -21,6 +22,7 @@ const subTabs = [
   { id: "analytics", label: "Analytics" },
   { id: "journal", label: "Journal" },
   { id: "history", label: "History" },
+  { id: "volume-fees", label: "Volume & Fees" },
 ]
 
 // Portfolio summary metrics
@@ -70,6 +72,8 @@ export default function PortfolioDashboard() {
         return <JournalTabContent />
       case "history":
         return <HistoryTabContent />
+      case "volume-fees":
+        return <VolumeFeesTabContent />
       default:
         return <OverviewTabContent />
     }
@@ -88,7 +92,7 @@ export default function PortfolioDashboard() {
             <Download className="h-4 w-4" />
             Withdraw
           </Button>
-          <Button className="gap-2 bg-primary hover:bg-primary/90">
+          <Button className="gap-2 bg-[#5471f6] hover:bg-[#5471f6]/90 text-[#000000]">
             <Upload className="h-4 w-4" />
             Deposit
           </Button>
