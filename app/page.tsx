@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowUpIcon, ArrowDownIcon, Download, Upload, Info } from "lucide-react"
@@ -13,6 +13,9 @@ import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab"
 import { PositionsTabContent } from "@/components/portfolio/tabs/positions-tab"
 import { HistoryTabContent } from "@/components/portfolio/tabs/history-tab"
 import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab"
+
+// Drawdown analytics
+import { generatePortfolioData, calculateMaxDrawdown, calculateCurrentDrawdown, formatDrawdown } from "@/lib/analytics/drawdown"
 
 // Sub-tabs configuration
 const subTabs = [
@@ -58,6 +61,19 @@ const portfolioSummary = {
 export default function PortfolioDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
 
+  // Generate portfolio data and calculate drawdown metrics
+  const portfolioData = useMemo(() => generatePortfolioData(), [])
+  const maxDrawdown = useMemo(() => calculateMaxDrawdown(portfolioData), [portfolioData])
+  const currentDrawdown = useMemo(() => calculateCurrentDrawdown(portfolioData), [portfolioData])
+
+  // Determine which drawdown metric to show
+  const drawdownLabel = currentDrawdown ? "Current Drawdown" : "Max Drawdown"
+  const drawdownValue = currentDrawdown
+    ? formatDrawdown(currentDrawdown.percentage)
+    : maxDrawdown
+      ? formatDrawdown(maxDrawdown.percentage)
+      : "-0.00%"
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
@@ -101,7 +117,7 @@ export default function PortfolioDashboard() {
 
       {/* Summary Stats Bar */}
       <div className="bg-card border border-border rounded-lg p-4 mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {/* Account Value */}
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
@@ -180,6 +196,22 @@ export default function PortfolioDashboard() {
             <span className="text-xl font-mono font-semibold text-foreground">
               {portfolioSummary.sharpeRatio.value}
             </span>
+          </div>
+
+          {/* Drawdown - Shows Current if in drawdown, otherwise Max */}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <span>{drawdownLabel}</span>
+              <Info className="h-3 w-3" />
+            </div>
+            <span className="text-xl font-mono font-semibold text-destructive">
+              {drawdownValue}
+            </span>
+            {currentDrawdown && maxDrawdown && (
+              <span className="text-xs font-mono mt-0.5 text-muted-foreground">
+                Max: {formatDrawdown(maxDrawdown.percentage)}
+              </span>
+            )}
           </div>
         </div>
       </div>
