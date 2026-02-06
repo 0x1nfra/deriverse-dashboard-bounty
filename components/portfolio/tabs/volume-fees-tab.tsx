@@ -6,7 +6,8 @@ import { ChartContainer } from "@/components/ui/chart"
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-import { mockTrades, getVolumeMetrics, getFeeMetrics, getDailyVolumeData, formatCurrency, formatPercentage } from "@/lib/mock/trades"
+import { getVolumeMetrics, getFeeMetrics, getDailyVolumeData, formatCurrency, formatPercentage } from "@/lib/mock/trades"
+import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 
 const timePeriods = [
   { id: "7d", label: "7D", days: 7 },
@@ -17,11 +18,14 @@ const timePeriods = [
 export function VolumeFeesTabContent() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
   const days = timePeriods.find(p => p.id === selectedPeriod)?.days || 7
+  
+  // Use filtered trades from global filters
+  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
 
-  // Calculate metrics
-  const volumeMetrics = useMemo(() => getVolumeMetrics(mockTrades), [])
-  const feeMetrics = useMemo(() => getFeeMetrics(mockTrades), [])
-  const dailyVolumeData = useMemo(() => getDailyVolumeData(mockTrades, days), [days])
+  // Calculate metrics based on filtered trades
+  const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
+  const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
+  const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, days), [filteredTrades, days])
 
   // Fee breakdown data for donut chart
   const feeBreakdownData = [
@@ -41,7 +45,9 @@ export function VolumeFeesTabContent() {
       {/* Header */}
       <div className="mb-2">
         <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-        <p className="text-muted-foreground text-sm mt-1">Track your trading volume and fee impact across time periods</p>
+        <p className="text-muted-foreground text-sm mt-1">
+          Track your trading volume and fee impact • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+        </p>
       </div>
 
       {/* Volume Summary Cards */}

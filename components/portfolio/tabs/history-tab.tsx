@@ -4,18 +4,11 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
+import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { formatCurrency } from "@/lib/mock/trades"
 
 // Secondary tabs for history section (matching reference images)
 const historyTabs = ["Trade History", "Deposits", "Withdrawals", "Transfers"]
-
-// Mock trade history data
-const tradeHistory = [
-  { id: "1", date: "2024-01-26 14:32", pair: "SOL/USD", type: "Buy", amount: "50", price: "98.50", total: "$4,925.00", fee: "$2.46" },
-  { id: "2", date: "2024-01-26 10:15", pair: "BTC/USD", type: "Sell", amount: "0.1", price: "49,200", total: "$4,920.00", fee: "$2.46" },
-  { id: "3", date: "2024-01-25 16:45", pair: "ETH/USD", type: "Buy", amount: "2.0", price: "2,450", total: "$4,900.00", fee: "$2.45" },
-  { id: "4", date: "2024-01-25 09:20", pair: "SOL/USD", type: "Sell", amount: "100", price: "102.30", total: "$10,230.00", fee: "$5.11" },
-  { id: "5", date: "2024-01-24 22:10", pair: "XRP/USD", type: "Buy", amount: "1000", price: "0.52", total: "$520.00", fee: "$0.26" },
-]
 
 // Mock deposit/withdrawal data
 const transactionHistory = [
@@ -26,6 +19,7 @@ const transactionHistory = [
 
 export function HistoryTabContent() {
   const [activeHistoryTab, setActiveHistoryTab] = useState("Trade History")
+  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
 
   return (
     <div className="space-y-6">
@@ -33,7 +27,9 @@ export function HistoryTabContent() {
       <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Transaction History</h2>
-          <p className="text-muted-foreground text-sm mt-1">View all your trading and account activity</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            View all your trading and account activity • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+          </p>
         </div>
         <Button variant="outline" className="gap-2 bg-transparent">
           <Download className="h-4 w-4" />
@@ -63,7 +59,7 @@ export function HistoryTabContent() {
       </div>
 
       {/* History Content */}
-      {activeHistoryTab === "Trade History" && <TradeHistoryTable />}
+      {activeHistoryTab === "Trade History" && <TradeHistoryTable trades={filteredTrades} />}
       {activeHistoryTab === "Deposits" && <TransactionTable type="Deposit" />}
       {activeHistoryTab === "Withdrawals" && <TransactionTable type="Withdrawal" />}
       {activeHistoryTab === "Transfers" && <TransfersTable />}
@@ -71,8 +67,25 @@ export function HistoryTabContent() {
   )
 }
 
+interface TradeHistoryTableProps {
+  trades: ReturnType<typeof useFilteredTrades>['filteredTrades']
+}
+
 // Trade History Table
-function TradeHistoryTable() {
+function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
+  if (trades.length === 0) {
+    return (
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="px-5 py-8 text-center text-muted-foreground">
+          No trades found for the selected filters
+        </div>
+      </div>
+    )
+  }
+
+  // Sort trades by timestamp (newest first)
+  const sortedTrades = [...trades].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
@@ -80,33 +93,43 @@ function TradeHistoryTable() {
           <thead>
             <tr className="border-b border-border">
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Pair</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Fee</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Symbol</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Side</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Size</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Entry Price</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">PnL</th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Fees</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {tradeHistory.map((trade) => (
-              <tr key={trade.id} className="hover:bg-secondary/30 transition-colors">
-                <td className="px-5 py-3 text-sm text-muted-foreground">{trade.date}</td>
-                <td className="px-5 py-3 text-sm font-medium text-foreground">{trade.pair}</td>
-                <td className="px-5 py-3">
-                  <span className={cn(
-                    "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold",
-                    trade.type === "Buy" ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+            {sortedTrades.map((trade) => {
+              const totalFees = trade.fees.maker + trade.fees.taker + trade.fees.funding
+              return (
+                <tr key={trade.id} className="hover:bg-secondary/30 transition-colors">
+                  <td className="px-5 py-3 text-sm text-muted-foreground">
+                    {trade.timestamp.toLocaleDateString()} {trade.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td className="px-5 py-3 text-sm font-medium text-foreground font-mono">{trade.symbol}</td>
+                  <td className="px-5 py-3">
+                    <span className={cn(
+                      "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold",
+                      trade.side === "long" ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+                    )}>
+                      {trade.side === "long" ? "Long" : "Short"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{trade.size.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{formatCurrency(trade.entryPrice)}</td>
+                  <td className={cn(
+                    "px-5 py-3 text-sm font-mono",
+                    trade.pnl >= 0 ? "text-success" : "text-destructive"
                   )}>
-                    {trade.type}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{trade.amount}</td>
-                <td className="px-5 py-3 text-sm font-mono text-muted-foreground">${trade.price}</td>
-                <td className="px-5 py-3 text-sm font-mono text-foreground">{trade.total}</td>
-                <td className="px-5 py-3 text-sm font-mono text-muted-foreground text-right">{trade.fee}</td>
-              </tr>
-            ))}
+                    {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
+                  </td>
+                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground text-right">{formatCurrency(totalFees)}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

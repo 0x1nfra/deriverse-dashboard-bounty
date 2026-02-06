@@ -14,6 +14,10 @@ import { PositionsTabContent } from "@/components/portfolio/tabs/positions-tab"
 import { HistoryTabContent } from "@/components/portfolio/tabs/history-tab"
 import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab"
 
+// Filter components
+import { FilterProvider } from "@/components/providers/filter-provider"
+import { GlobalFilterBar } from "@/components/filters/global-filter-bar"
+
 // Drawdown analytics
 import { generatePortfolioData, calculateMaxDrawdown, calculateCurrentDrawdown, formatDrawdown } from "@/lib/analytics/drawdown"
 
@@ -96,7 +100,8 @@ export default function PortfolioDashboard() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <FilterProvider>
+      <div className="max-w-[1440px] mx-auto px-6 py-8">
       {/* Page Header with Title and Actions */}
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -216,6 +221,9 @@ export default function PortfolioDashboard() {
         </div>
       </div>
 
+      {/* Global Filter Bar */}
+      <GlobalFilterBar />
+
       {/* Sub-Tab Navigation */}
       <div className="border-b border-border mb-6">
         <nav className="flex items-center gap-1">
@@ -244,5 +252,6 @@ export default function PortfolioDashboard() {
         {renderTabContent()}
       </div>
     </div>
+    </FilterProvider>
   )
 }
