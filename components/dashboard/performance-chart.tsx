@@ -13,9 +13,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { Trade } from "@/lib/mock/trades"
 
-// Mock performance data
-const performanceData = [
+// Mock performance data (fallback when no trades provided)
+const defaultPerformanceData = [
   { day: "Day 1", value: 42000 },
   { day: "Day 2", value: 43200 },
   { day: "Day 3", value: 42800 },
@@ -28,11 +29,47 @@ const performanceData = [
 const chartConfig = {
   value: {
     label: "Portfolio Value",
-    color: "#7C3AED",
+    color: "#5471f6",
   },
 }
 
-export function PerformanceChart() {
+interface PerformanceChartProps {
+  trades?: Trade[]
+}
+
+function generatePerformanceDataFromTrades(trades: Trade[]): { day: string; value: number }[] {
+  // Group trades by day and calculate cumulative portfolio value
+  const tradesByDay = new Map<string, number>()
+  
+  trades.forEach((trade) => {
+    const date = trade.timestamp.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    const currentValue = tradesByDay.get(date) || 40000
+    tradesByDay.set(date, currentValue + trade.pnl)
+  })
+
+  // Sort by date and take last 7 days
+  const sortedEntries = Array.from(tradesByDay.entries())
+    .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+    .slice(-7)
+
+  if (sortedEntries.length === 0) {
+    return defaultPerformanceData
+  }
+
+  // Calculate cumulative values
+  let runningValue = 40000
+  return sortedEntries.map(([day, pnl]) => {
+    runningValue += pnl
+    return { day, value: Math.round(runningValue) }
+  })
+}
+
+export function PerformanceChart({ trades }: PerformanceChartProps) {
+  // Use provided trades or fallback to default mock data
+  const performanceData = trades && trades.length > 0
+    ? generatePerformanceDataFromTrades(trades)
+    : defaultPerformanceData
+
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -61,8 +98,8 @@ export function PerformanceChart() {
             >
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#5471f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
@@ -86,7 +123,7 @@ export function PerformanceChart() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#7C3AED"
+                stroke="#5471f6"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorValue)"
