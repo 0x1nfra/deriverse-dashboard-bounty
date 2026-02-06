@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 import { formatCurrency } from "@/lib/mock/trades"
+import { AnnotationIcon } from "@/components/annotations/annotation-icon"
+import { AnnotationCell } from "@/components/annotations/annotation-cell"
 
 // Secondary tabs for history section (matching reference images)
 const historyTabs = ["Trade History", "Deposits", "Withdrawals", "Transfers"]
@@ -73,6 +75,8 @@ interface TradeHistoryTableProps {
 
 // Trade History Table
 function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
+  const [expandedRow, setExpandedRow] = useState<string | null>(null)
+
   if (trades.length === 0) {
     return (
       <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -85,6 +89,10 @@ function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
 
   // Sort trades by timestamp (newest first)
   const sortedTrades = [...trades].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+
+  const handleRowClick = (tradeId: string) => {
+    setExpandedRow(expandedRow === tradeId ? null : tradeId)
+  }
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -99,35 +107,58 @@ function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Entry Price</th>
               <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">PnL</th>
               <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Fees</th>
+              <th className="px-5 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">Notes</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {sortedTrades.map((trade) => {
               const totalFees = trade.fees.maker + trade.fees.taker + trade.fees.funding
+              const isExpanded = expandedRow === trade.id
+              
               return (
-                <tr key={trade.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-5 py-3 text-sm text-muted-foreground">
-                    {trade.timestamp.toLocaleDateString()} {trade.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="px-5 py-3 text-sm font-medium text-foreground font-mono">{trade.symbol}</td>
-                  <td className="px-5 py-3">
-                    <span className={cn(
-                      "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold",
-                      trade.side === "long" ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+                <>
+                  <tr 
+                    key={trade.id} 
+                    className={cn(
+                      "hover:bg-secondary/30 transition-colors cursor-pointer",
+                      isExpanded && "bg-secondary/20"
+                    )}
+                    onClick={() => handleRowClick(trade.id)}
+                  >
+                    <td className="px-5 py-3 text-sm text-muted-foreground">
+                      {trade.timestamp.toLocaleDateString()} {trade.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="px-5 py-3 text-sm font-medium text-foreground font-mono">{trade.symbol}</td>
+                    <td className="px-5 py-3">
+                      <span className={cn(
+                        "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold",
+                        trade.side === "long" ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+                      )}>
+                        {trade.side === "long" ? "Long" : "Short"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{trade.size.toLocaleString()}</td>
+                    <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{formatCurrency(trade.entryPrice)}</td>
+                    <td className={cn(
+                      "px-5 py-3 text-sm font-mono",
+                      trade.pnl >= 0 ? "text-success" : "text-destructive"
                     )}>
-                      {trade.side === "long" ? "Long" : "Short"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{trade.size.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{formatCurrency(trade.entryPrice)}</td>
-                  <td className={cn(
-                    "px-5 py-3 text-sm font-mono",
-                    trade.pnl >= 0 ? "text-success" : "text-destructive"
-                  )}>
-                    {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
-                  </td>
-                  <td className="px-5 py-3 text-sm font-mono text-muted-foreground text-right">{formatCurrency(totalFees)}</td>
-                </tr>
+                      {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
+                    </td>
+                    <td className="px-5 py-3 text-sm font-mono text-muted-foreground text-right">{formatCurrency(totalFees)}</td>
+                    <td className="px-5 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <AnnotationIcon 
+                        tradeId={trade.id} 
+                        onClick={() => handleRowClick(trade.id)}
+                      />
+                    </td>
+                  </tr>
+                  <AnnotationCell 
+                    tradeId={trade.id}
+                    isExpanded={isExpanded}
+                    onToggle={() => handleRowClick(trade.id)}
+                  />
+                </>
               )
             })}
           </tbody>
