@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-const MAX_ANNOTATION_LENGTH = 500
+export const MAX_ANNOTATION_LENGTH = 500
 
 interface AnnotationStore {
   annotations: Record<string, string>

@@ -4,10 +4,8 @@ import { useState, useCallback } from "react"
 import { FileText, Pencil, Trash2 } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { useAnnotationStore } from "@/stores/annotation-store"
+import { useAnnotationStore, MAX_ANNOTATION_LENGTH } from "@/stores/annotation-store"
 import { cn } from "@/lib/utils"
-
-const MAX_ANNOTATION_LENGTH = 500
 
 interface AnnotationDisplayProps {
   tradeId: string

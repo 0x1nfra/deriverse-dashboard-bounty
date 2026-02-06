@@ -1,5 +1,7 @@
-// Enhanced mock trade data for Volume & Fees analysis
-// 500+ trades across 90 days with realistic volumes and fee structures
+// Client-only mock trade data hook
+// Generates trades only on the client to avoid SSR hydration mismatches
+
+import { useState, useEffect, useMemo } from "react"
 
 export interface Trade {
   id: string
@@ -127,34 +129,46 @@ function generateTrade(id: number): Trade {
   }
 }
 
-// Generate 500+ trades
-export const mockTrades: Trade[] = Array.from({ length: 520 }, (_, i) => generateTrade(i + 1))
-
-// Sort by date (newest first)
-mockTrades.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-
-// Calculate volume metrics
-export interface VolumeMetrics {
-  period24h: number
-  period7d: number
-  period30d: number
-  periodAll: number
-  change24h: number
-  change7d: number
-  change30d: number
+// Generate trades array
+function generateTrades(count: number): Trade[] {
+  const trades = Array.from({ length: count }, (_, i) => generateTrade(i + 1))
+  // Sort by date (newest first)
+  trades.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+  return trades
 }
 
-export interface FeeMetrics {
-  totalFees: number
-  makerFees: number
-  takerFees: number
-  fundingFees: number
-  feeImpact: number // fees as % of gross PnL
-  feeBreakdown: {
-    maker: { amount: number; percentage: number }
-    taker: { amount: number; percentage: number }
-    funding: { amount: number; percentage: number }
+// Hook for client-only mock trades
+export function useMockTrades(count: number = 520): {
+  trades: Trade[]
+  isLoading: boolean
+} {
+  const [trades, setTrades] = useState<Trade[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Generate trades only on client side
+    const generatedTrades = generateTrades(count)
+    setTrades(generatedTrades)
+    setIsLoading(false)
+  }, [count])
+
+  return { trades, isLoading }
+}
+
+// Format currency
+export function formatCurrency(value: number): string {
+  if (value >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(2)}M`
+  } else if (value >= 1_000) {
+    return `$${(value / 1_000).toFixed(2)}K`
   }
+  return `$${value.toFixed(2)}`
+}
+
+// Format percentage
+export function formatPercentage(value: number): string {
+  const sign = value >= 0 ? "+" : ""
+  return `${sign}${value.toFixed(2)}%`
 }
 
 // Calculate volume for a specific time period
@@ -167,6 +181,17 @@ export function calculateVolume(trades: Trade[], days: number): number {
     .reduce((sum, trade) => sum + trade.size * trade.entryPrice, 0)
 }
 
+// Volume metrics interface
+export interface VolumeMetrics {
+  period24h: number
+  period7d: number
+  period30d: number
+  periodAll: number
+  change24h: number
+  change7d: number
+  change30d: number
+}
+
 // Calculate all volume metrics
 export function getVolumeMetrics(trades: Trade[]): VolumeMetrics {
   const volume24h = calculateVolume(trades, 1)
@@ -174,9 +199,8 @@ export function getVolumeMetrics(trades: Trade[]): VolumeMetrics {
   const volume30d = calculateVolume(trades, 30)
   const volumeAll = trades.reduce((sum, trade) => sum + trade.size * trade.entryPrice, 0)
   
-  // Calculate previous periods for change %
+  // Calculate changes from previous periods
   const now = new Date()
-  
   const prev24hStart = new Date(now)
   prev24hStart.setDate(prev24hStart.getDate() - 2)
   const prev24hEnd = new Date(now)
@@ -195,11 +219,11 @@ export function getVolumeMetrics(trades: Trade[]): VolumeMetrics {
   const prevVolume24h = trades
     .filter(t => t.timestamp >= prev24hStart && t.timestamp < prev24hEnd)
     .reduce((sum, t) => sum + t.size * t.entryPrice, 0)
-    
+  
   const prevVolume7d = trades
     .filter(t => t.timestamp >= prev7dStart && t.timestamp < prev7dEnd)
     .reduce((sum, t) => sum + t.size * t.entryPrice, 0)
-    
+  
   const prevVolume30d = trades
     .filter(t => t.timestamp >= prev30dStart && t.timestamp < prev30dEnd)
     .reduce((sum, t) => sum + t.size * t.entryPrice, 0)
@@ -216,6 +240,20 @@ export function getVolumeMetrics(trades: Trade[]): VolumeMetrics {
     change24h: Math.round(change24h * 100) / 100,
     change7d: Math.round(change7d * 100) / 100,
     change30d: Math.round(change30d * 100) / 100,
+  }
+}
+
+// Fee metrics interface
+export interface FeeMetrics {
+  totalFees: number
+  makerFees: number
+  takerFees: number
+  fundingFees: number
+  feeImpact: number
+  feeBreakdown: {
+    maker: { amount: number; percentage: number }
+    taker: { amount: number; percentage: number }
+    funding: { amount: number; percentage: number }
   }
 }
 
@@ -282,20 +320,4 @@ export function getDailyVolumeData(trades: Trade[], days: number) {
   }
   
   return data
-}
-
-// Format currency
-export function formatCurrency(value: number): string {
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`
-  } else if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(2)}K`
-  }
-  return `$${value.toFixed(2)}`
-}
-
-// Format percentage
-export function formatPercentage(value: number): string {
-  const sign = value >= 0 ? "+" : ""
-  return `${sign}${value.toFixed(2)}%`
 }

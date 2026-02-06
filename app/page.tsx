@@ -117,7 +117,7 @@ export default function PortfolioDashboard() {
             <Download className="h-4 w-4" />
             Withdraw
           </Button>
-          <Button className="gap-2 bg-[#5471f6] hover:bg-[#5471f6]/90 text-[#000000]">
+          <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
             <Upload className="h-4 w-4" />
             Deposit
           </Button>

@@ -14,24 +14,28 @@ import {
   ChartContainer,
 } from "@/components/ui/chart"
 import { cn } from "@/lib/utils"
-import { generatePortfolioData, calculateRunningDrawdown } from "@/lib/analytics/drawdown"
+import { Trade } from "@/lib/mock/trades"
+
+interface PortfolioValueChartProps {
+  trades: Trade[]
+}
 
 const timePeriods = [
   { label: "7D", days: 7 },
   { label: "30D", days: 30 },
   { label: "90D", days: 90 },
   { label: "1Y", days: 365 },
-  { label: "ALL", days: 90 },
+  { label: "ALL", days: 365 },
 ]
 
 const chartConfig = {
   value: {
     label: "Portfolio Value",
-    color: "#5471f6",
+    color: "var(--primary)",
   },
   drawdown: {
     label: "Drawdown",
-    color: "#EF4444",
+    color: "var(--destructive)",
   },
 }
 
@@ -51,31 +55,54 @@ interface ChartDataPoint {
   drawdownBase: number | null
 }
 
-export function PortfolioValueChart() {
+export function PortfolioValueChart({ trades }: PortfolioValueChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState("7D")
   
-  // Generate portfolio data
+  // Generate portfolio data from trades
   const allData = useMemo(() => {
-    const data = generatePortfolioData()
-    const drawdowns = calculateRunningDrawdown(data)
+    if (trades.length === 0) return []
     
-    // Calculate running peak and drawdown base for each point
+    // Sort trades by timestamp
+    const sortedTrades = [...trades].sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+    
+    // Group trades by date and calculate cumulative PnL
+    const dateMap = new Map<string, { pnl: number; date: Date }>()
+    let cumulativePnl = 0
+    
+    sortedTrades.forEach((trade) => {
+      const dateKey = trade.timestamp.toISOString().split('T')[0]
+      cumulativePnl += trade.pnl
+      
+      dateMap.set(dateKey, {
+        pnl: cumulativePnl,
+        date: trade.timestamp,
+      })
+    })
+    
+    // Convert to array and calculate drawdowns
+    const data = Array.from(dateMap.entries()).map(([dateStr, { pnl }]) => ({
+      date: dateStr,
+      value: pnl,
+    }))
+    
     let peak = data[0]?.value || 0
-    return data.map((point, index) => {
+    return data.map((point) => {
       if (point.value > peak) {
         peak = point.value
       }
-      // drawdownBase is the current value when in drawdown, null when at peak
+      const drawdown = peak > 0 ? ((peak - point.value) / peak) * 100 : 0
       const drawdownBase = point.value < peak ? point.value : null
       return {
         date: point.date,
         value: point.value,
-        drawdown: drawdowns[index] || 0,
+        drawdown: drawdown,
         peak: peak,
         drawdownBase: drawdownBase,
       }
     })
-  }, [])
+  }, [trades])
 
   // Filter data based on selected period
   const filteredData = useMemo(() => {
@@ -144,26 +171,26 @@ export function PortfolioValueChart() {
             >
               <defs>
                 <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#5471f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="drawdownGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(239, 68, 68, 0)" />
-                  <stop offset="100%" stopColor="rgba(239, 68, 68, 0.08)" />
+                  <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0} />
+                  <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0.08} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 interval="preserveStartEnd"
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={formatCurrency}
               />
               <Tooltip content={<CustomTooltip />} />
@@ -182,7 +209,7 @@ export function PortfolioValueChart() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#5471f6"
+                stroke="var(--primary)"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#portfolioGradient)"

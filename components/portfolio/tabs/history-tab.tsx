@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
@@ -121,9 +121,8 @@ function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
               const isExpanded = expandedRow === trade.id
               
               return (
-                <>
+                <React.Fragment key={trade.id}>
                   <tr 
-                    key={trade.id} 
                     className={cn(
                       "hover:bg-secondary/30 transition-colors cursor-pointer",
                       isExpanded && "bg-secondary/20"
@@ -163,7 +162,7 @@ function TradeHistoryTable({ trades }: TradeHistoryTableProps) {
                     isExpanded={isExpanded}
                     onToggle={() => handleRowClick(trade.id)}
                   />
-                </>
+                </React.Fragment>
               )
             })}
           </tbody>

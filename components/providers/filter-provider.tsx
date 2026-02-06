@@ -33,20 +33,10 @@ function FilterProviderInner({ children }: { children: React.ReactNode }) {
   // Note: Date ranges are computed client-side only to avoid SSR hydration mismatches
   const [filters, setFilters] = React.useState<FilterState>(() => {
     const urlFilters = parseFiltersFromUrl(searchParams)
-    const initialState = {
+    return {
       ...DEFAULT_FILTER_STATE,
       ...urlFilters,
     }
-
-    // Only calculate date range on client side to ensure SSR/client consistency
-    // Server-side will have null dates initially, client will compute them
-    if (isClient && initialState.dateRange) {
-      const { from, to } = getDateRangeFromPreset(initialState.dateRange.preset)
-      initialState.dateRange.from = from
-      initialState.dateRange.to = to
-    }
-
-    return initialState
   })
 
   // Compute date ranges on client side after hydration

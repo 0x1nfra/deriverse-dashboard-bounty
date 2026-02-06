@@ -43,7 +43,7 @@ export function TopNavigation() {
         {/* Connect Wallet Button */}
         <Button
           onClick={handleConnectWallet}
-          className="bg-[#5471f6] hover:bg-[#5471f6]/90 text-[#000000]"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           Connect Wallet
         </Button>

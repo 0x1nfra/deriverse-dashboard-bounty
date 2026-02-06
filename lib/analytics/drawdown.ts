@@ -48,6 +48,11 @@ export function calculateMaxDrawdown(data: PortfolioDataPoint[]): MaxDrawdownRes
   let troughDate = data[0].date
   let currentPeakValue = data[0].value
   let currentPeakDate = data[0].date
+  let currentPeakTimestamp = data[0].timestamp
+  let currentTroughTimestamp = data[0].timestamp
+  let maxTroughValue = data[0].value
+  let maxTroughDate = data[0].date
+  let maxTroughTimestamp = data[0].timestamp
 
   for (const point of data) {
     if (point.value > currentPeakValue) {
@@ -58,17 +63,23 @@ export function calculateMaxDrawdown(data: PortfolioDataPoint[]): MaxDrawdownRes
           maxDrawdown = drawdown
           peakValue = currentPeakValue
           peakDate = currentPeakDate
+          maxTroughValue = troughValue
+          maxTroughDate = troughDate
+          maxTroughTimestamp = currentTroughTimestamp
         }
       }
       // Reset for new peak
       currentPeakValue = point.value
       currentPeakDate = point.date
+      currentPeakTimestamp = point.timestamp
       troughValue = point.value
       troughDate = point.date
+      currentTroughTimestamp = point.timestamp
     } else if (point.value < troughValue) {
       // New trough
       troughValue = point.value
       troughDate = point.date
+      currentTroughTimestamp = point.timestamp
     }
   }
 
@@ -78,20 +89,23 @@ export function calculateMaxDrawdown(data: PortfolioDataPoint[]): MaxDrawdownRes
     maxDrawdown = finalDrawdown
     peakValue = currentPeakValue
     peakDate = currentPeakDate
+    maxTroughValue = troughValue
+    maxTroughDate = troughDate
+    maxTroughTimestamp = currentTroughTimestamp
   }
 
   if (maxDrawdown === 0) return null
 
   const durationDays = Math.ceil(
-    (new Date(troughDate).getTime() - new Date(peakDate).getTime()) / (1000 * 60 * 60 * 24)
+    (maxTroughTimestamp - new Date(peakDate).getTime()) / (1000 * 60 * 60 * 24)
   )
 
   return {
     percentage: Math.round(maxDrawdown * 10000) / 100,
     peakDate,
-    troughDate,
+    troughDate: maxTroughDate,
     peakValue,
-    troughValue,
+    troughValue: maxTroughValue,
     durationDays: Math.max(0, durationDays),
   }
 }
@@ -106,8 +120,10 @@ export function getDrawdownPeriods(data: PortfolioDataPoint[]): DrawdownPeriod[]
   const periods: DrawdownPeriod[] = []
   let peakValue = data[0].value
   let peakDate = data[0].date
+  let peakTimestamp = data[0].timestamp
   let troughValue = data[0].value
   let troughDate = data[0].date
+  let troughTimestamp = data[0].timestamp
   let inDrawdown = false
 
   for (let i = 1; i < data.length; i++) {
@@ -118,7 +134,7 @@ export function getDrawdownPeriods(data: PortfolioDataPoint[]): DrawdownPeriod[]
       if (inDrawdown && troughValue < peakValue) {
         const drawdownPercentage = ((peakValue - troughValue) / peakValue) * 100
         const durationDays = Math.ceil(
-          (new Date(troughDate).getTime() - new Date(peakDate).getTime()) / (1000 * 60 * 60 * 24)
+          (troughTimestamp - peakTimestamp) / (1000 * 60 * 60 * 24)
         )
 
         periods.push({
@@ -136,13 +152,16 @@ export function getDrawdownPeriods(data: PortfolioDataPoint[]): DrawdownPeriod[]
       // Reset for new peak
       peakValue = point.value
       peakDate = point.date
+      peakTimestamp = point.timestamp
       troughValue = point.value
       troughDate = point.date
+      troughTimestamp = point.timestamp
       inDrawdown = false
     } else if (point.value < troughValue) {
       // New trough - we're in a drawdown
       troughValue = point.value
       troughDate = point.date
+      troughTimestamp = point.timestamp
       inDrawdown = true
     }
   }
@@ -161,12 +180,14 @@ export function calculateCurrentDrawdown(data: PortfolioDataPoint[]): CurrentDra
   const currentPoint = data[data.length - 1]
   let peakValue = data[0].value
   let peakDate = data[0].date
+  let peakTimestamp = data[0].timestamp
 
   // Find the most recent peak
   for (const point of data) {
     if (point.value > peakValue) {
       peakValue = point.value
       peakDate = point.date
+      peakTimestamp = point.timestamp
     }
   }
 
@@ -175,7 +196,7 @@ export function calculateCurrentDrawdown(data: PortfolioDataPoint[]): CurrentDra
 
   const drawdownPercentage = ((peakValue - currentPoint.value) / peakValue) * 100
   const daysInDrawdown = Math.ceil(
-    (currentPoint.timestamp - new Date(peakDate).getTime()) / (1000 * 60 * 60 * 24)
+    (currentPoint.timestamp - peakTimestamp) / (1000 * 60 * 60 * 24)
   )
 
   return {

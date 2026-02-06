@@ -3,8 +3,8 @@
 import { X, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { SymbolFilter } from "./symbol-filter"
-import { DateRangeFilter } from "./date-range-filter"
+import { SymbolFilter } from "@/components/filters/symbol-filter"
+import { DateRangeFilter } from "@/components/filters/date-range-filter"
 import { useFilters } from "@/hooks/use-filters"
 
 export function GlobalFilterBar() {
