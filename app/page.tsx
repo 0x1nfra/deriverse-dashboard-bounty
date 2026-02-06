@@ -13,6 +13,7 @@ import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab"
 import { PositionsTabContent } from "@/components/portfolio/tabs/positions-tab"
 import { HistoryTabContent } from "@/components/portfolio/tabs/history-tab"
 import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab"
+import { RiskTabContent } from "@/components/portfolio/tabs/risk-tab"
 
 // Filter components
 import { FilterProvider } from "@/components/providers/filter-provider"
@@ -30,6 +31,7 @@ const subTabs = [
   { id: "journal", label: "Journal" },
   { id: "history", label: "History" },
   { id: "volume-fees", label: "Volume & Fees" },
+  { id: "risk", label: "Risk" },
 ]
 
 // Portfolio summary metrics
@@ -94,6 +96,8 @@ export default function PortfolioDashboard() {
         return <HistoryTabContent />
       case "volume-fees":
         return <VolumeFeesTabContent />
+      case "risk":
+        return <RiskTabContent />
       default:
         return <OverviewTabContent />
     }
