@@ -49,7 +49,7 @@ export function AnalyticsMetricCard({
                 cy="16"
                 r="14"
                 fill="none"
-                stroke="#7C3AED"
+                stroke="#5471f6"
                 strokeWidth="3"
                 strokeDasharray={`${(percentage / 100) * 88} 88`}
               />
