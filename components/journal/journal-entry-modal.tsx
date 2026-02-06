@@ -55,12 +55,13 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId }: JournalEn
     exitRationale: "",
   })
 
-  // Calculate P&L
+  // Calculate P&L with direction
   const entryPrice = parseFloat(formData.entryPrice) || 0
   const exitPrice = parseFloat(formData.exitPrice) || 0
   const positionSize = parseFloat(formData.positionSize) || 0
-  const pnlAmount = (exitPrice - entryPrice) * positionSize
-  const pnlPercent = entryPrice > 0 ? ((exitPrice - entryPrice) / entryPrice) * 100 : 0
+  const sign = formData.direction === "short" ? -1 : 1
+  const pnlAmount = sign * (exitPrice - entryPrice) * positionSize
+  const pnlPercent = entryPrice > 0 ? sign * ((exitPrice - entryPrice) / entryPrice) * 100 : 0
   const isProfit = pnlAmount >= 0
 
   const handleTagToggle = (tag: string) => {

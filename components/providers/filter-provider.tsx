@@ -27,8 +27,10 @@ function FilterProviderInner({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const isClient = typeof window !== 'undefined'
 
   // Initialize state from URL or defaults
+  // Note: Date ranges are computed client-side only to avoid SSR hydration mismatches
   const [filters, setFilters] = React.useState<FilterState>(() => {
     const urlFilters = parseFiltersFromUrl(searchParams)
     const initialState = {
@@ -36,8 +38,9 @@ function FilterProviderInner({ children }: { children: React.ReactNode }) {
       ...urlFilters,
     }
 
-    // Calculate date range from preset
-    if (initialState.dateRange) {
+    // Only calculate date range on client side to ensure SSR/client consistency
+    // Server-side will have null dates initially, client will compute them
+    if (isClient && initialState.dateRange) {
       const { from, to } = getDateRangeFromPreset(initialState.dateRange.preset)
       initialState.dateRange.from = from
       initialState.dateRange.to = to
@@ -45,6 +48,27 @@ function FilterProviderInner({ children }: { children: React.ReactNode }) {
 
     return initialState
   })
+
+  // Compute date ranges on client side after hydration
+  React.useEffect(() => {
+    if (!isClient) return
+    
+    setFilters((prev) => {
+      // Only update if dates are null (initial SSR state)
+      if (prev.dateRange.from === null || prev.dateRange.to === null) {
+        const { from, to } = getDateRangeFromPreset(prev.dateRange.preset)
+        return {
+          ...prev,
+          dateRange: {
+            ...prev.dateRange,
+            from,
+            to,
+          },
+        }
+      }
+      return prev
+    })
+  }, [isClient])
 
   // Update URL when filters change
   React.useEffect(() => {

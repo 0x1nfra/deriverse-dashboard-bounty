@@ -77,21 +77,39 @@ export function calculateWinLossStats(trades: Trade[]): WinLossStats {
   const totalWins = winningTrades.length
   const totalLosses = losingTrades.length
 
-  const avgWin = totalWins > 0 
-    ? winningTrades.reduce((sum, t) => sum + t.pnl, 0) / totalWins 
+  // Compute grossProfit, grossLoss, avgWin, and avgLoss first
+  const grossProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0)
+  const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0))
+
+  const avgWin = totalWins > 0
+    ? grossProfit / totalWins
     : 0
 
-  const avgLoss = totalLosses > 0 
-    ? Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0) / totalLosses)
+  const avgLoss = totalLosses > 0
+    ? grossLoss / totalLosses
     : 0
 
   const winRate = trades.length > 0 ? (totalWins / trades.length) * 100 : 0
 
-  const riskRewardRatio = avgLoss > 0 ? avgWin / avgLoss : 0
+  // Assign riskRewardRatio based on edge cases
+  let riskRewardRatio: number
+  if (avgLoss === 0 && avgWin > 0) {
+    riskRewardRatio = Infinity
+  } else if (avgWin === 0 && avgLoss > 0) {
+    riskRewardRatio = 0
+  } else {
+    riskRewardRatio = avgLoss > 0 ? avgWin / avgLoss : 0
+  }
 
-  const grossProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0)
-  const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0))
-  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : 0
+  // Assign profitFactor based on edge cases
+  let profitFactor: number
+  if (grossLoss === 0 && grossProfit > 0) {
+    profitFactor = Infinity
+  } else if (grossProfit === 0 && grossLoss > 0) {
+    profitFactor = 0
+  } else {
+    profitFactor = grossLoss > 0 ? grossProfit / grossLoss : 0
+  }
 
   return {
     avgWin,
