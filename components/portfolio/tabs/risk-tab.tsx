@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { ExtremeTradesCard } from "@/components/risk/extreme-trades-card"
 import { WinLossAnalysis } from "@/components/risk/win-loss-analysis"
 import { DirectionalBiasComponent } from "@/components/risk/directional-bias"
@@ -15,6 +15,11 @@ import {
 
 export function RiskTabContent() {
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const extremeTrades = useMemo(
     () => calculateExtremeTrades(filteredTrades),
@@ -41,8 +46,8 @@ export function RiskTabContent() {
       {/* Header */}
       <div className="mb-2">
         <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Risk management metrics and trade analysis • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+        <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
+          Risk management metrics and trade analysis • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
         </p>
       </div>
 

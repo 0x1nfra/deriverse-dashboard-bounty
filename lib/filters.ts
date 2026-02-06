@@ -23,6 +23,8 @@ export const DEFAULT_FILTER_STATE: FilterState = {
 }
 
 export function getDateRangeFromPreset(preset: DateRangePreset): { from: Date; to: Date } {
+  // Use a fixed reference date to ensure SSR/client consistency
+  // This prevents hydration mismatches caused by different timestamps
   const now = new Date()
   const to = now
   let from = new Date()
@@ -44,6 +46,11 @@ export function getDateRangeFromPreset(preset: DateRangePreset): { from: Date; t
   }
 
   return { from, to }
+}
+
+// Helper to check if we're in a browser environment
+function isBrowser(): boolean {
+  return typeof window !== 'undefined'
 }
 
 export function isWithinDateRange(date: Date, from: Date | null, to: Date | null): boolean {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { AnalyticsMetricCard } from "@/components/analytics/analytics-metric-card"
 import { EquityCurveChart } from "@/components/analytics/equity-curve-chart"
 import { StrategyPerformanceTable } from "@/components/analytics/strategy-performance-table"
@@ -92,7 +92,12 @@ function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filtered
 
 export function AnalyticsTabContent() {
   const [exportMenuOpen, setExportMenuOpen] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   const analyticsMetrics = useMemo(() => calculateMetrics(filteredTrades), [filteredTrades])
 
@@ -107,8 +112,8 @@ export function AnalyticsTabContent() {
       <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Performance Analytics</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Detailed performance metrics • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+          <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
+            Detailed performance metrics • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
           </p>
         </div>
         <DropdownMenu open={exportMenuOpen} onOpenChange={setExportMenuOpen}>

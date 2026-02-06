@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
@@ -21,7 +21,12 @@ const transactionHistory = [
 
 export function HistoryTabContent() {
   const [activeHistoryTab, setActiveHistoryTab] = useState("Trade History")
+  const [isClient, setIsClient] = useState(false)
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -29,8 +34,8 @@ export function HistoryTabContent() {
       <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Transaction History</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            View all your trading and account activity • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+          <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
+            View all your trading and account activity • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
           </p>
         </div>
         <Button variant="outline" className="gap-2 bg-transparent">

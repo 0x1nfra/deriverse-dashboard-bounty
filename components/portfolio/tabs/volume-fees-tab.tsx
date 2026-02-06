@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, Legend } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react"
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 
 import { getVolumeMetrics, getFeeMetrics, getDailyVolumeData, formatCurrency, formatPercentage } from "@/lib/mock/trades"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { OrderTypeAnalysis } from "@/components/analytics/order-type-analysis"
 
 const timePeriods = [
   { id: "7d", label: "7D", days: 7 },
@@ -17,27 +18,32 @@ const timePeriods = [
 
 export function VolumeFeesTabContent() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
+  const [isClient, setIsClient] = useState(false)
   const days = timePeriods.find(p => p.id === selectedPeriod)?.days || 7
   
   // Use filtered trades from global filters
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Calculate metrics based on filtered trades
   const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
   const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
   const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, days), [filteredTrades, days])
 
-  // Fee breakdown data for donut chart
+  // Fee breakdown data for donut chart - updated colors
   const feeBreakdownData = [
-    { name: "Maker", value: feeMetrics.makerFees, color: "#5471f6" },
-    { name: "Taker", value: feeMetrics.takerFees, color: "#3B82F6" },
-    { name: "Funding", value: feeMetrics.fundingFees, color: "#10B981" },
+    { name: "Maker", value: feeMetrics.makerFees, color: "#5471f6" },   // Blue
+    { name: "Taker", value: feeMetrics.takerFees, color: "#06B6D4" },   // Cyan
+    { name: "Funding", value: feeMetrics.fundingFees, color: "#8B5CF6" }, // Purple
   ]
 
   const chartConfig = {
     maker: { label: "Maker", color: "#5471f6" },
-    taker: { label: "Taker", color: "#3B82F6" },
-    funding: { label: "Funding", color: "#10B981" },
+    taker: { label: "Taker", color: "#06B6D4" },
+    funding: { label: "Funding", color: "#8B5CF6" },
   }
 
   return (
@@ -45,8 +51,8 @@ export function VolumeFeesTabContent() {
       {/* Header */}
       <div className="mb-2">
         <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Track your trading volume and fee impact • {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+        <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
+          Track your trading volume and fee impact • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
         </p>
       </div>
 
@@ -106,7 +112,13 @@ export function VolumeFeesTabContent() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
+                  <defs>
+                    <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#5471f6" />
+                      <stop offset="100%" stopColor="#06B6D4" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
@@ -131,7 +143,7 @@ export function VolumeFeesTabContent() {
                   />
                   <Bar 
                     dataKey="volume" 
-                    fill="#5471f6" 
+                    fill="url(#volumeGradient)" 
                     radius={[4, 4, 0, 0]}
                     activeBar={{ fill: "#5471f6", fillOpacity: 0.8 }}
                   />
@@ -200,6 +212,14 @@ export function VolumeFeesTabContent() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Order Type Performance Analysis */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          Order Type Performance
+        </h3>
+        <OrderTypeAnalysis trades={filteredTrades} />
       </div>
     </div>
   )

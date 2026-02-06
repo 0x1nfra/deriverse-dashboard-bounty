@@ -148,11 +148,11 @@ export function PortfolioValueChart() {
                   <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="drawdownGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                  <stop offset="0%" stopColor="rgba(239, 68, 68, 0)" />
+                  <stop offset="100%" stopColor="rgba(239, 68, 68, 0.08)" />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
               <XAxis
                 dataKey="date"
                 axisLine={false}
@@ -168,12 +168,12 @@ export function PortfolioValueChart() {
               />
               <Tooltip content={<CustomTooltip />} />
               
-              {/* Drawdown overlay - shows gap between peak and current value during drawdowns */}
+              {/* Drawdown overlay - gradient from peak (transparent) to current value (light red) */}
               <Area
                 type="monotone"
                 dataKey="peak"
                 stroke="transparent"
-                fill="rgba(239, 68, 68, 0.15)"
+                fill="url(#drawdownGradient)"
                 fillOpacity={1}
                 isAnimationActive={false}
               />

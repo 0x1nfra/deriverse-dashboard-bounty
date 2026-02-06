@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { PortfolioValueChart } from "@/components/portfolio/portfolio-value-chart"
 import { AssetAllocationChart } from "@/components/portfolio/asset-allocation-chart"
 import { RecentActivityTable } from "@/components/portfolio/recent-activity-table"
@@ -8,6 +8,11 @@ import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 
 export function OverviewTabContent() {
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Calculate allocation data from filtered trades
   const allocationData = useMemo(() => {
@@ -31,8 +36,8 @@ export function OverviewTabContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          {dateRangeLabel} • {filteredTrades.length.toLocaleString()} trades
+        <p className="text-muted-foreground text-sm" suppressHydrationWarning>
+          {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
         </p>
       </div>
 
