@@ -1,66 +1,55 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-
-const navItems = [
-  { href: "/", label: "Trading" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/journal", label: "Journal" },
-  { href: "/analytics", label: "Analytics" },
-]
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function TopNavigation() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const handleConnectWallet = () => {
-    console.log("Connect Wallet clicked - implement wallet connection logic here")
-  }
+    console.log(
+      "Connect Wallet clicked - implement wallet connection logic here",
+    );
+  };
+
+  // Portfolio is the only active link as per requirements
+  const isActive = pathname === "/" || pathname === "/portfolio";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card border-b border-border">
       <div className="flex items-center justify-between h-full px-6 max-w-[1440px] mx-auto">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <DeriverseIcon className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold text-foreground">Deriverse</span>
+        <Link href="/" className="flex items-center">
+          <img src="/light.svg" alt="Deriverse" className="h-4" />
         </Link>
 
-        {/* Navigation Tabs */}
+        {/* Navigation - Only Portfolio */}
         <nav className="flex items-center gap-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || 
-              (item.href !== "/" && pathname.startsWith(item.href))
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-                  isActive
-                    ? "text-foreground bg-secondary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                )}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
+          <Link
+            href="/"
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+              isActive
+                ? "text-foreground bg-secondary"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
+            )}
+          >
+            Portfolio
+          </Link>
         </nav>
 
         {/* Connect Wallet Button */}
-        <Button 
+        <Button
           onClick={handleConnectWallet}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          className="bg-[#5471f6] hover:bg-[#5471f6]/90 text-[#000000]"
         >
           Connect Wallet
         </Button>
       </div>
     </header>
-  )
+  );
 }
 
 function DeriverseIcon({ className }: { className?: string }) {
@@ -83,5 +72,5 @@ function DeriverseIcon({ className }: { className?: string }) {
         strokeWidth="2"
       />
     </svg>
-  )
+  );
 }

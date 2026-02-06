@@ -5,14 +5,14 @@ import { ChartContainer } from "@/components/ui/chart"
 
 // Mock allocation data matching the mockup
 const allocationData = [
-  { name: "SOL", value: 45, color: "#7C3AED" },
+  { name: "SOL", value: 45, color: "#5471f6" },
   { name: "BTC", value: 30, color: "#3B82F6" },
   { name: "ETH", value: 15, color: "#10B981" },
   { name: "USDC", value: 10, color: "#64748B" },
 ]
 
 const chartConfig = {
-  sol: { label: "SOL", color: "#7C3AED" },
+  sol: { label: "SOL", color: "#5471f6" },
   btc: { label: "BTC", color: "#3B82F6" },
   eth: { label: "ETH", color: "#10B981" },
   usdc: { label: "USDC", color: "#64748B" },

@@ -34,7 +34,7 @@ const timePeriods = ["7D", "30D", "90D", "1Y", "ALL"]
 const chartConfig = {
   primary: {
     label: "Portfolio",
-    color: "#7C3AED",
+    color: "#5471f6",
   },
   secondary: {
     label: "Benchmark",
@@ -75,8 +75,8 @@ export function EquityCurveChart() {
             >
               <defs>
                 <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#5471f6" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
@@ -99,7 +99,7 @@ export function EquityCurveChart() {
               <Area
                 type="monotone"
                 dataKey="primary"
-                stroke="#7C3AED"
+                stroke="#5471f6"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#equityGradient)"
