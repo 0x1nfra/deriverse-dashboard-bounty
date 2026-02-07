@@ -1,3 +1,4 @@
+import React from "react"
 import { cn } from "@/lib/utils"
 import { Trade } from "@/lib/mock/trades"
 
@@ -25,14 +26,14 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`
 }
 
-export function RecentTradesTable({ trades }: RecentTradesTableProps) {
+export function RecentTradesTable({ trades }: RecentTradesTableProps): React.ReactElement {
   // Use provided trades or fallback to default mock data
   const recentTrades = trades && trades.length > 0
     ? trades.slice(0, 5).map((trade) => ({
         pair: `${trade.symbol}/USD`,
         type: trade.side === "long" ? "BUY" : "SELL",
         amount: trade.size.toString(),
-        price: trade.entryPrice.toLocaleString(),
+        price: trade.entryPrice.toLocaleString("en-US"),
         time: formatTimeAgo(trade.timestamp),
       }))
     : defaultRecentTrades

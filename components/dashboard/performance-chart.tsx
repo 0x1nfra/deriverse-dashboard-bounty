@@ -43,8 +43,8 @@ function generatePerformanceDataFromTrades(trades: Trade[]): { day: string; valu
   
   trades.forEach((trade) => {
     const date = trade.timestamp.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    const currentValue = tradesByDay.get(date) || 40000
-    tradesByDay.set(date, currentValue + trade.pnl)
+    const dailyPnL = tradesByDay.get(date) || 0
+    tradesByDay.set(date, dailyPnL + trade.pnl)
   })
 
   // Sort by date and take last 7 days

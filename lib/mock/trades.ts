@@ -13,6 +13,8 @@ export interface Trade {
   exitPrice: number
   pnl: number
   pnlPercentage: number
+  grossPnlPercentage: number
+  netPnlPercentage: number
   fees: {
     maker: number
     taker: number
@@ -109,6 +111,10 @@ function generateTrade(id: number): Trade {
   const grossPnL = notionalValue * (pnlPercentage / 100)
   const netPnL = grossPnL - totalFees
   
+  // Calculate percentages from respective PnL values
+  const grossPnlPercentage = pnlPercentage
+  const netPnlPercentage = (netPnL / notionalValue) * 100
+  
   return {
     id: `trade-${id.toString().padStart(4, "0")}`,
     symbol,
@@ -118,7 +124,9 @@ function generateTrade(id: number): Trade {
     entryPrice: Math.round(entryPrice * 1000000) / 1000000,
     exitPrice: Math.round(exitPrice * 1000000) / 1000000,
     pnl: Math.round(netPnL * 100) / 100,
-    pnlPercentage: Math.round(pnlPercentage * 100) / 100,
+    pnlPercentage: Math.round(netPnlPercentage * 100) / 100,
+    grossPnlPercentage: Math.round(grossPnlPercentage * 100) / 100,
+    netPnlPercentage: Math.round(netPnlPercentage * 100) / 100,
     fees: {
       maker: Math.round(makerFee * 100) / 100,
       taker: Math.round(takerFee * 100) / 100,
