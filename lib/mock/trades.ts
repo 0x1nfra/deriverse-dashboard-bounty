@@ -1,7 +1,8 @@
 // Client-only mock trade data hook
 // Generates trades only on the client to avoid SSR hydration mismatches
+// Now with realistic market regimes to create visible drawdown periods
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 
 export interface Trade {
   id: string
@@ -34,6 +35,18 @@ const FEE_RATES = {
   funding: 0.0001, // 0.01% per 8 hours
 }
 
+// Market phases to create realistic drawdown periods
+// Each phase has different win rates and volatility
+// Updated win rates: 45-58% (more realistic for professional traders)
+const MARKET_PHASES = [
+  { days: 15, winRate: 0.58, volatility: 0.08, name: "bull_run", tradesPerDay: [4, 8] },       // Strong uptrend (was 75%)
+  { days: 12, winRate: 0.35, volatility: 0.12, name: "correction", tradesPerDay: [6, 12] },   // First drawdown
+  { days: 18, winRate: 0.55, volatility: 0.10, name: "recovery_1", tradesPerDay: [5, 10] },   // Recovery (was 65%)
+  { days: 15, winRate: 0.30, volatility: 0.15, name: "bear_market", tradesPerDay: [8, 15] }, // Major drawdown
+  { days: 20, winRate: 0.52, volatility: 0.09, name: "recovery_2", tradesPerDay: [4, 9] },    // Final recovery (was 60%)
+  { days: 10, winRate: 0.45, volatility: 0.11, name: "chop", tradesPerDay: [3, 7] },         // Choppy ending
+]
+
 // Generate random number in range
 function randomInRange(min: number, max: number): number {
   return Math.random() * (max - min) + min
@@ -44,56 +57,62 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-// Generate random date within last 90 days
-function randomDate(): Date {
-  const now = new Date()
-  const daysAgo = randomInt(0, 90)
-  const hoursAgo = randomInt(0, 23)
-  const minutesAgo = randomInt(0, 59)
-  
-  const date = new Date(now)
-  date.setDate(date.getDate() - daysAgo)
-  date.setHours(date.getHours() - hoursAgo)
-  date.setMinutes(date.getMinutes() - minutesAgo)
-  
-  return date
+// Base prices for different symbols - Updated to current market values (Feb 2025)
+const BASE_PRICES: Record<string, number> = {
+  SOL: 145,
+  ETH: 3200,
+  BTC: 98000,
+  BONK: 0.000025,
+  JUP: 1.2,
+  WIF: 0.35,
+  PEPE: 0.000015,
+  DOGE: 0.15,
 }
 
-// Generate realistic trade data
-function generateTrade(id: number): Trade {
+// Global account balance tracker (shared across all trade generation)
+let accountBalance = 50000 // Starting capital: $50k
+const RISK_PER_TRADE = 0.02 // 2% risk per trade
+
+// Generate a trade with specific win rate bias
+function generateTradeWithBias(
+  id: number,
+  date: Date,
+  winRate: number,
+  volatility: number
+): Trade {
   const symbol = symbols[randomInt(0, symbols.length - 1)]
   const side: "long" | "short" = Math.random() > 0.5 ? "long" : "short"
   const orderType: "market" | "limit" | "stop" = 
     Math.random() > 0.7 ? "market" : Math.random() > 0.5 ? "limit" : "stop"
   
-  // Base prices for different symbols
-  const basePrices: Record<string, number> = {
-    SOL: 100,
-    ETH: 2500,
-    BTC: 50000,
-    BONK: 0.00002,
-    JUP: 0.8,
-    WIF: 0.25,
-    PEPE: 0.000001,
-    DOGE: 0.08,
-  }
+  const basePrice = BASE_PRICES[symbol]
+  const entryPrice = basePrice * (1 + randomInRange(-volatility * 0.5, volatility * 0.5))
   
-  const basePrice = basePrices[symbol]
-  const priceVolatility = 0.1 // 10% price movement
-  const entryPrice = basePrice * (1 + randomInRange(-priceVolatility, priceVolatility))
-  
-  // 60% win rate
-  const isWin = Math.random() < 0.6
+  // Use the provided win rate instead of fixed 60%
+  const isWin = Math.random() < winRate
   const pnlDirection = isWin ? 1 : -1
-  const pnlPercentage = randomInRange(0.5, 15) * pnlDirection
-  const exitPrice = entryPrice * (1 + pnlPercentage / 100)
   
-  // Position size varies by symbol value
-  const sizeMultiplier = symbol === "BTC" ? 0.1 : symbol === "ETH" ? 1 : symbol === "SOL" ? 50 : 100000
-  const size = randomInRange(0.5, 5) * sizeMultiplier
+  // During drawdowns (low win rate), make losses bigger and wins smaller
+  // During bull runs (high win rate), make wins bigger
+  const pnlMultiplier = winRate > 0.52 ? randomInRange(1.0, 1.4) : 
+                        winRate < 0.40 ? randomInRange(0.7, 1.0) : 1.0
   
-  // Calculate notional value
-  const notionalValue = size * entryPrice
+  // Power law distribution for more realistic PnL (favors smaller moves)
+  const pnlBaseRaw = Math.pow(Math.random(), 1.8) * 12
+  const pnlBase = pnlBaseRaw < 0.3 ? 0.3 : pnlBaseRaw // Minimum 0.3% move
+  
+  const pnlPercentage = pnlBase * pnlDirection * pnlMultiplier
+  
+  // Calculate position size based on account balance (2% risk)
+  const riskAmount = accountBalance * RISK_PER_TRADE
+  const stopLossPercent = randomInRange(0.5, 2.0) // Stop loss between 0.5% and 2%
+  const notionalValue = riskAmount / (stopLossPercent / 100)
+  const size = notionalValue / entryPrice
+  
+  // Add slippage for market orders (0.05% to 0.2%)
+  const slippage = orderType === "market" ? randomInRange(0.0005, 0.002) : 0
+  const slippageImpact = side === "long" ? slippage : -slippage
+  const exitPrice = entryPrice * (1 + (pnlPercentage + slippageImpact) / 100)
   
   // Calculate fees
   const isMaker = orderType === "limit"
@@ -110,6 +129,9 @@ function generateTrade(id: number): Trade {
   // Calculate PnL
   const grossPnL = notionalValue * (pnlPercentage / 100)
   const netPnL = grossPnL - totalFees
+  
+  // Update account balance with this trade's PnL
+  accountBalance += netPnL
   
   // Calculate percentages from respective PnL values
   const grossPnlPercentage = pnlPercentage
@@ -132,16 +154,54 @@ function generateTrade(id: number): Trade {
       taker: Math.round(takerFee * 100) / 100,
       funding: Math.round(fundingFee * 100) / 100,
     },
-    timestamp: randomDate(),
+    timestamp: date,
     duration: Math.round(holdTimeHours * 60),
   }
 }
 
-// Generate trades array
+// Generate trades with market regime awareness
 function generateTrades(count: number): Trade[] {
-  const trades = Array.from({ length: count }, (_, i) => generateTrade(i + 1))
+  // Reset account balance for each generation
+  accountBalance = 50000
+  
+  const trades: Trade[] = []
+  const now = new Date()
+  let tradeId = 1
+  let currentDay = 0
+  
+  // Generate trades phase by phase
+  for (const phase of MARKET_PHASES) {
+    for (let day = 0; day < phase.days && tradeId <= count; day++) {
+      const tradesToday = randomInt(phase.tradesPerDay[0], phase.tradesPerDay[1])
+      
+      for (let t = 0; t < tradesToday && tradeId <= count; t++) {
+        // Create date for this trade (going back from today)
+        const tradeDate = new Date(now)
+        tradeDate.setDate(tradeDate.getDate() - (90 - currentDay))
+        
+        // Random time during the day (market hours weighted)
+        const hour = randomInt(8, 22) // More trades during active hours
+        const minute = randomInt(0, 59)
+        tradeDate.setHours(hour, minute, 0, 0)
+        
+        const trade = generateTradeWithBias(
+          tradeId,
+          tradeDate,
+          phase.winRate,
+          phase.volatility
+        )
+        
+        trades.push(trade)
+        tradeId++
+      }
+      
+      currentDay++
+    }
+  }
+  
   // Sort by date (newest first)
   trades.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+  
   return trades
 }
 
