@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Figtree } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { TopNavigation } from '@/components/top-navigation'
+import { ErrorBoundary } from '@/components/error-boundary'
 import './globals.css'
 
 const figtree = Figtree({ subsets: ["latin"] });
@@ -29,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${figtree.className} antialiased bg-background text-foreground min-h-screen`}>
-        <TopNavigation />
-        <main className="pt-16">
-          {children}
-        </main>
+        <ErrorBoundary>
+          <TopNavigation />
+          <main className="pt-16">
+            {children}
+          </main>
+        </ErrorBoundary>
         <Analytics />
       </body>
     </html>

@@ -6,6 +6,8 @@ import { WinLossAnalysis } from "@/components/risk/win-loss-analysis"
 import { DirectionalBiasComponent } from "@/components/risk/directional-bias"
 import { DurationAnalysis } from "@/components/risk/duration-analysis"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { useFilters } from "@/hooks/use-filters"
+import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 import {
   calculateExtremeTrades,
   calculateWinLossStats,
@@ -14,12 +16,41 @@ import {
 } from "@/lib/analytics/risk"
 
 export function RiskTabContent() {
-  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Handle empty states
+  if (!isLoading && isClient && filteredTrades.length === 0) {
+    if (isDefault) {
+      return (
+        <div className="space-y-6">
+          <div className="mb-2">
+            <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Risk management metrics and trade analysis
+            </p>
+          </div>
+          <NoTradesState />
+        </div>
+      )
+    }
+    return (
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            Risk management metrics and trade analysis
+          </p>
+        </div>
+        <NoFilterResultsState onClearFilters={resetFilters} />
+      </div>
+    )
+  }
 
   const extremeTrades = useMemo(
     () => calculateExtremeTrades(filteredTrades),

@@ -105,35 +105,35 @@ export default function PortfolioDashboard() {
 
   return (
     <FilterProvider>
-      <div className="max-w-[1440px] mx-auto px-6 py-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Page Header with Title and Actions */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground">Portfolio</h1>
-          <p className="text-muted-foreground mt-1">Manage and track your trading portfolio</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Portfolio</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and track your trading portfolio</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2 bg-transparent">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button variant="outline" size="sm" className="gap-2 bg-transparent sm:size-default">
             <Download className="h-4 w-4" />
-            Withdraw
+            <span className="hidden sm:inline">Withdraw</span>
           </Button>
-          <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground sm:size-default">
             <Upload className="h-4 w-4" />
-            Deposit
+            <span className="hidden sm:inline">Deposit</span>
           </Button>
         </div>
       </div>
 
       {/* Summary Stats Bar */}
-      <div className="bg-card border border-border rounded-lg p-4 mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
           {/* Account Value */}
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
               <span>{portfolioSummary.accountValue.label}</span>
               <Info className="h-3 w-3" />
             </div>
-            <span className="text-xl font-mono font-semibold text-foreground">
+            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
               {portfolioSummary.accountValue.value}
             </span>
             <div className="flex items-center gap-1 mt-0.5">
@@ -158,7 +158,7 @@ export default function PortfolioDashboard() {
               <Info className="h-3 w-3" />
             </div>
             <span className={cn(
-              "text-xl font-mono font-semibold",
+              "text-lg sm:text-xl font-mono font-semibold truncate",
               portfolioSummary.totalPnL.isPositive ? "text-success" : "text-destructive"
             )}>
               {portfolioSummary.totalPnL.value}
@@ -178,7 +178,7 @@ export default function PortfolioDashboard() {
               <Info className="h-3 w-3" />
             </div>
             <span className={cn(
-              "text-xl font-mono font-semibold",
+              "text-lg sm:text-xl font-mono font-semibold truncate",
               portfolioSummary.winRate.isPositive ? "text-success" : "text-foreground"
             )}>
               {portfolioSummary.winRate.value}
@@ -191,7 +191,7 @@ export default function PortfolioDashboard() {
               <span>{portfolioSummary.profitFactor.label}</span>
               <Info className="h-3 w-3" />
             </div>
-            <span className="text-xl font-mono font-semibold text-foreground">
+            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
               {portfolioSummary.profitFactor.value}
             </span>
           </div>
@@ -202,7 +202,7 @@ export default function PortfolioDashboard() {
               <span>{portfolioSummary.sharpeRatio.label}</span>
               <Info className="h-3 w-3" />
             </div>
-            <span className="text-xl font-mono font-semibold text-foreground">
+            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
               {portfolioSummary.sharpeRatio.value}
             </span>
           </div>
@@ -213,7 +213,7 @@ export default function PortfolioDashboard() {
               <span>{drawdownLabel}</span>
               <Info className="h-3 w-3" />
             </div>
-            <span className="text-xl font-mono font-semibold text-destructive">
+            <span className="text-lg sm:text-xl font-mono font-semibold text-destructive truncate">
               {drawdownValue}
             </span>
             {currentDrawdown && maxDrawdown && (
@@ -229,14 +229,14 @@ export default function PortfolioDashboard() {
       <GlobalFilterBar />
 
       {/* Sub-Tab Navigation */}
-      <div className="border-b border-border mb-6">
-        <nav className="flex items-center gap-1">
+      <div className="border-b border-border mb-6 overflow-x-auto scrollbar-hide">
+        <nav className="flex items-center gap-1 min-w-max">
           {subTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "px-4 py-3 text-sm font-medium transition-colors relative",
+                "px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap",
                 activeTab === tab.id
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"

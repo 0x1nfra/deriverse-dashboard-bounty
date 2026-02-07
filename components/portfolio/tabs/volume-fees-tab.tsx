@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 
 import { getVolumeMetrics, getFeeMetrics, getDailyVolumeData, formatCurrency, formatPercentage } from "@/lib/mock/trades"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { useFilters } from "@/hooks/use-filters"
+import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 import { OrderTypeAnalysis } from "@/components/analytics/order-type-analysis"
 
 const timePeriods = [
@@ -20,13 +22,42 @@ export function VolumeFeesTabContent() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
   const [isClient, setIsClient] = useState(false)
   const days = timePeriods.find(p => p.id === selectedPeriod)?.days || 7
-  
+
   // Use filtered trades from global filters
-  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { resetFilters, isDefault } = useFilters()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Handle empty states
+  if (!isLoading && isClient && filteredTrades.length === 0) {
+    if (isDefault) {
+      return (
+        <div className="space-y-6">
+          <div className="mb-2">
+            <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Track your trading volume and fee impact
+            </p>
+          </div>
+          <NoTradesState />
+        </div>
+      )
+    }
+    return (
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            Track your trading volume and fee impact
+          </p>
+        </div>
+        <NoFilterResultsState onClearFilters={resetFilters} />
+      </div>
+    )
+  }
 
   // Calculate metrics based on filtered trades
   const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
