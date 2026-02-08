@@ -41,6 +41,44 @@ A comprehensive trading analytics dashboard for perpetual futures trading, featu
 - **Responsive Design** - Optimized for mobile, tablet, and desktop
 - **Dark Theme** - Professional dark UI optimized for trading environments
 
+## Screenshots
+
+### Overview Tab
+![Overview Tab](screenshots/overview-tab.png)
+*Portfolio value chart with drawdown visualization, asset allocation, and recent activity*
+
+### Trading Tab
+![Trading Tab](screenshots/trading-tab.png)
+*Open positions, recent trades, and performance metrics*
+
+### Analytics Tab
+![Analytics Tab](screenshots/analytics-tab.png)
+*Performance metrics, equity curve, and strategy analysis*
+
+### Risk Tab
+![Risk Tab](screenshots/risk-tab.png)
+*Risk management metrics including extreme trades, win/loss analysis, and directional bias*
+
+### Volume & Fees Tab
+![Volume Tab](screenshots/volume-tab.png)
+*Trading volume analysis and fee breakdown*
+
+### Journal Tab
+![Journal Tab](screenshots/journal-tab.png)
+*Trading journal with annotated trade entries*
+
+### History Tab
+![History Tab](screenshots/history-tab.png)
+*Complete trade history with filtering and annotations*
+
+### Mobile View
+![Mobile View](screenshots/mobile-view.png)
+*Responsive design optimized for mobile devices*
+
+## Demo Video
+
+🎬 **[Watch Demo Video](demo-video.mp4)** - 60-second walkthrough of the dashboard showcasing all key features
+
 ## Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) with App Router
