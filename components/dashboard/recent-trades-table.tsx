@@ -40,9 +40,6 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <div className="px-5 py-4 border-b border-border">
-        <h3 className="text-lg font-medium text-foreground">Recent Trades</h3>
-      </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

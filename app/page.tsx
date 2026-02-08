@@ -1,105 +1,56 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ArrowUpIcon, ArrowDownIcon, Download, Upload, Info } from "lucide-react"
+import { Download, Upload } from "lucide-react"
 
 // Sub-tab content components
-import { OverviewTabContent } from "@/components/portfolio/tabs/overview-tab"
 import { TradingTabContent } from "@/components/portfolio/tabs/trading-tab"
 import { AnalyticsTabContent } from "@/components/portfolio/tabs/analytics-tab"
 import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab"
-import { PositionsTabContent } from "@/components/portfolio/tabs/positions-tab"
-import { HistoryTabContent } from "@/components/portfolio/tabs/history-tab"
 import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab"
 import { RiskTabContent } from "@/components/portfolio/tabs/risk-tab"
+import { PersistentSummaryCard } from "@/components/portfolio/persistent-summary-card"
+import { OpenPositionsTable } from "@/components/dashboard/open-positions-table"
+import { OpenOrdersTabContent } from "@/components/portfolio/tabs/open-orders-tab"
 
 // Filter components
 import { FilterProvider } from "@/components/providers/filter-provider"
 import { GlobalFilterBar } from "@/components/filters/global-filter-bar"
 
-// Drawdown analytics
-import { generatePortfolioData, calculateMaxDrawdown, calculateCurrentDrawdown, formatDrawdown } from "@/lib/analytics/drawdown"
-
 // Sub-tabs configuration
 const subTabs = [
-  { id: "overview", label: "Overview" },
-  { id: "trading", label: "Trading" },
   { id: "positions", label: "Positions" },
+  { id: "open-orders", label: "Open Orders" },
+  { id: "history", label: "History" },
   { id: "analytics", label: "Analytics" },
   { id: "journal", label: "Journal" },
-  { id: "history", label: "History" },
   { id: "volume-fees", label: "Volume & Fees" },
   { id: "risk", label: "Risk" },
 ]
 
-// Portfolio summary metrics
-const portfolioSummary = {
-  accountValue: {
-    label: "Account Value",
-    value: "$45,230.89",
-    change: "+$2,100.50",
-    changePercent: "+4.86%",
-    isPositive: true,
-  },
-  totalPnL: {
-    label: "Total PnL",
-    value: "$5,230.89",
-    change: "+12.3%",
-    isPositive: true,
-  },
-  winRate: {
-    label: "Win Rate",
-    value: "62.5%",
-    isPositive: true,
-  },
-  profitFactor: {
-    label: "Profit Factor",
-    value: "1.8",
-  },
-  sharpeRatio: {
-    label: "Sharpe Ratio",
-    value: "1.45",
-  },
-}
-
 export default function PortfolioDashboard() {
-  const [activeTab, setActiveTab] = useState("overview")
-
-  // Generate portfolio data and calculate drawdown metrics
-  const portfolioData = useMemo(() => generatePortfolioData(), [])
-  const maxDrawdown = useMemo(() => calculateMaxDrawdown(portfolioData), [portfolioData])
-  const currentDrawdown = useMemo(() => calculateCurrentDrawdown(portfolioData), [portfolioData])
-
-  // Determine which drawdown metric to show
-  const drawdownLabel = currentDrawdown ? "Current Drawdown" : "Max Drawdown"
-  const drawdownValue = currentDrawdown
-    ? formatDrawdown(currentDrawdown.percentage)
-    : maxDrawdown
-      ? formatDrawdown(maxDrawdown.percentage)
-      : "-0.00%"
+  const [activeTab, setActiveTab] = useState("history")
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "overview":
-        return <OverviewTabContent />
-      case "trading":
-        return <TradingTabContent />
       case "positions":
-        return <PositionsTabContent />
+        return <OpenPositionsTable />
+      case "open-orders":
+        return <OpenOrdersTabContent />
+      case "history":
+        return <TradingTabContent />
       case "analytics":
         return <AnalyticsTabContent />
       case "journal":
         return <JournalTabContent />
-      case "history":
-        return <HistoryTabContent />
       case "volume-fees":
         return <VolumeFeesTabContent />
       case "risk":
         return <RiskTabContent />
       default:
-        return <OverviewTabContent />
+        return <OpenPositionsTable />
     }
   }
 
@@ -124,106 +75,8 @@ export default function PortfolioDashboard() {
         </div>
       </div>
 
-      {/* Summary Stats Bar */}
-      <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-          {/* Account Value */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{portfolioSummary.accountValue.label}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
-              {portfolioSummary.accountValue.value}
-            </span>
-            <div className="flex items-center gap-1 mt-0.5">
-              {portfolioSummary.accountValue.isPositive ? (
-                <ArrowUpIcon className="h-3 w-3 text-success" />
-              ) : (
-                <ArrowDownIcon className="h-3 w-3 text-destructive" />
-              )}
-              <span className={cn(
-                "text-xs font-mono",
-                portfolioSummary.accountValue.isPositive ? "text-success" : "text-destructive"
-              )}>
-                {portfolioSummary.accountValue.change} ({portfolioSummary.accountValue.changePercent})
-              </span>
-            </div>
-          </div>
-
-          {/* Total PnL */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{portfolioSummary.totalPnL.label}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className={cn(
-              "text-lg sm:text-xl font-mono font-semibold truncate",
-              portfolioSummary.totalPnL.isPositive ? "text-success" : "text-destructive"
-            )}>
-              {portfolioSummary.totalPnL.value}
-            </span>
-            <span className={cn(
-              "text-xs font-mono mt-0.5",
-              portfolioSummary.totalPnL.isPositive ? "text-success" : "text-destructive"
-            )}>
-              {portfolioSummary.totalPnL.change}
-            </span>
-          </div>
-
-          {/* Win Rate */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{portfolioSummary.winRate.label}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className={cn(
-              "text-lg sm:text-xl font-mono font-semibold truncate",
-              portfolioSummary.winRate.isPositive ? "text-success" : "text-foreground"
-            )}>
-              {portfolioSummary.winRate.value}
-            </span>
-          </div>
-
-          {/* Profit Factor */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{portfolioSummary.profitFactor.label}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
-              {portfolioSummary.profitFactor.value}
-            </span>
-          </div>
-
-          {/* Sharpe Ratio */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{portfolioSummary.sharpeRatio.label}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className="text-lg sm:text-xl font-mono font-semibold text-foreground truncate">
-              {portfolioSummary.sharpeRatio.value}
-            </span>
-          </div>
-
-          {/* Drawdown - Shows Current if in drawdown, otherwise Max */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-              <span>{drawdownLabel}</span>
-              <Info className="h-3 w-3" />
-            </div>
-            <span className="text-lg sm:text-xl font-mono font-semibold text-destructive truncate">
-              {drawdownValue}
-            </span>
-            {currentDrawdown && maxDrawdown && (
-              <span className="text-xs font-mono mt-0.5 text-muted-foreground">
-                Max: {formatDrawdown(maxDrawdown.percentage)}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Persistent Summary Card */}
+      <PersistentSummaryCard />
 
       {/* Global Filter Bar */}
       <GlobalFilterBar />
