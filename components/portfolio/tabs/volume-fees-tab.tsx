@@ -31,7 +31,12 @@ export function VolumeFeesTabContent() {
     setIsClient(true)
   }, [])
 
-  // Handle empty states
+  // Calculate metrics - must be called before any early returns to maintain hook order
+  const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
+  const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
+  const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, days), [filteredTrades, days])
+
+  // Handle empty states - after all hooks are called
   if (!isLoading && isClient && filteredTrades.length === 0) {
     if (isDefault) {
       return (
@@ -58,11 +63,6 @@ export function VolumeFeesTabContent() {
       </div>
     )
   }
-
-  // Calculate metrics based on filtered trades
-  const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
-  const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
-  const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, days), [filteredTrades, days])
 
   // Fee breakdown data for donut chart - updated colors
   const feeBreakdownData = [

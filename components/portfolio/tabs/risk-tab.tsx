@@ -24,7 +24,28 @@ export function RiskTabContent() {
     setIsClient(true)
   }, [])
 
-  // Handle empty states
+  // Calculate metrics - must be called before any early returns to maintain hook order
+  const extremeTrades = useMemo(
+    () => calculateExtremeTrades(filteredTrades),
+    [filteredTrades]
+  )
+
+  const winLossStats = useMemo(
+    () => calculateWinLossStats(filteredTrades),
+    [filteredTrades]
+  )
+
+  const directionalBias = useMemo(
+    () => calculateDirectionalBias(filteredTrades),
+    [filteredTrades]
+  )
+
+  const durationStats = useMemo(
+    () => calculateDurationStats(filteredTrades),
+    [filteredTrades]
+  )
+
+  // Handle empty states - after all hooks are called
   if (!isLoading && isClient && filteredTrades.length === 0) {
     if (isDefault) {
       return (
@@ -51,26 +72,6 @@ export function RiskTabContent() {
       </div>
     )
   }
-
-  const extremeTrades = useMemo(
-    () => calculateExtremeTrades(filteredTrades),
-    [filteredTrades]
-  )
-
-  const winLossStats = useMemo(
-    () => calculateWinLossStats(filteredTrades),
-    [filteredTrades]
-  )
-
-  const directionalBias = useMemo(
-    () => calculateDirectionalBias(filteredTrades),
-    [filteredTrades]
-  )
-
-  const durationStats = useMemo(
-    () => calculateDurationStats(filteredTrades),
-    [filteredTrades]
-  )
 
   return (
     <div className="space-y-6">

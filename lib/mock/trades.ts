@@ -1,3 +1,5 @@
+"use client"
+
 // Client-only mock trade data hook
 // Generates trades only on the client to avoid SSR hydration mismatches
 // Now with realistic market regimes to create visible drawdown periods

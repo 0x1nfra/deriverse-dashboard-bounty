@@ -113,11 +113,11 @@ export default function PortfolioDashboard() {
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and track your trading portfolio</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="outline" size="sm" className="gap-2 bg-transparent sm:size-default">
+          <Button variant="outline" size="sm" aria-label="Withdraw" className="gap-2 bg-transparent sm:size-default">
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">Withdraw</span>
           </Button>
-          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground sm:size-default">
+          <Button size="sm" aria-label="Deposit" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground sm:size-default">
             <Upload className="h-4 w-4" />
             <span className="hidden sm:inline">Deposit</span>
           </Button>
