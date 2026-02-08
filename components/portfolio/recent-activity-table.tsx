@@ -26,10 +26,12 @@ export function RecentActivityTable({ trades }: RecentActivityTableProps) {
 
   // Format value
   function formatValue(value: number): string {
-    if (value >= 1000) {
-      return `$${(value / 1000).toFixed(2)}K`
+    const abs = Math.abs(value)
+    const sign = value < 0 ? '-' : ''
+    if (abs >= 1000) {
+      return `${sign}$${(abs / 1000).toFixed(2)}K`
     }
-    return `$${value.toFixed(2)}`
+    return `${sign}$${abs.toFixed(2)}`
   }
 
   return (

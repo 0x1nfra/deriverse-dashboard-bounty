@@ -5,9 +5,12 @@ import { PortfolioValueChart } from "@/components/portfolio/portfolio-value-char
 import { AssetAllocationChart } from "@/components/portfolio/asset-allocation-chart"
 import { RecentActivityTable } from "@/components/portfolio/recent-activity-table"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { useFilters } from "@/hooks/use-filters"
+import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 
 export function OverviewTabContent() {
-  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -32,6 +35,22 @@ export function OverviewTabContent() {
       }))
       .sort((a, b) => b.value - a.value)
   }, [filteredTrades])
+
+  // Handle empty states
+  if (!isLoading && isClient && filteredTrades.length === 0) {
+    if (isDefault) {
+      return (
+        <div className="space-y-6">
+          <NoTradesState />
+        </div>
+      )
+    }
+    return (
+      <div className="space-y-6">
+        <NoFilterResultsState onClearFilters={resetFilters} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

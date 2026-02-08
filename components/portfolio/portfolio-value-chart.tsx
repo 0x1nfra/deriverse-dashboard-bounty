@@ -55,6 +55,36 @@ interface ChartDataPoint {
   drawdownBase: number | null
 }
 
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{ value: number; dataKey: string; payload: ChartDataPoint }>
+  label?: string
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload
+    const value = data.value
+    const drawdown = data.drawdown
+    const peak = data.peak
+
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-sm text-muted-foreground mb-1">{label}</p>
+        <p className="text-base font-semibold text-foreground">
+          Portfolio Value: ${value.toLocaleString()}
+        </p>
+        {drawdown > 0 && (
+          <p className="text-sm text-destructive mt-1">
+            Drawdown: -{drawdown.toFixed(2)}% from peak (${peak.toLocaleString()})
+          </p>
+        )}
+      </div>
+    )
+  }
+  return null
+}
+
 export function PortfolioValueChart({ trades }: PortfolioValueChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState("7D")
   
@@ -111,35 +141,6 @@ export function PortfolioValueChart({ trades }: PortfolioValueChartProps) {
     
     return allData.slice(-period.days)
   }, [allData, selectedPeriod])
-
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: {
-    active?: boolean
-    payload?: Array<{ value: number; dataKey: string; payload: ChartDataPoint }>
-    label?: string
-  }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload
-      const value = data.value
-      const drawdown = data.drawdown
-      const peak = data.peak
-      
-      return (
-        <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm text-muted-foreground mb-1">{label}</p>
-          <p className="text-base font-semibold text-foreground">
-            Portfolio Value: ${value.toLocaleString()}
-          </p>
-          {drawdown > 0 && (
-            <p className="text-sm text-destructive mt-1">
-              Drawdown: -{drawdown.toFixed(2)}% from peak (${peak.toLocaleString()})
-            </p>
-          )}
-        </div>
-      )
-    }
-    return null
-  }
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">

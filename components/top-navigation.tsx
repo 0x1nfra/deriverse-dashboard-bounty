@@ -19,7 +19,7 @@ export function TopNavigation() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card border-b border-border">
-      <div className="flex items-center justify-between h-full px-6 max-w-[1440px] mx-auto">
+      <div className="flex items-center justify-between h-full px-4 sm:px-6 max-w-[1440px] mx-auto">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <img src="/light.svg" alt="Deriverse" className="h-4" />
@@ -43,9 +43,11 @@ export function TopNavigation() {
         {/* Connect Wallet Button */}
         <Button
           onClick={handleConnectWallet}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          size="sm"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground sm:size-default"
         >
-          Connect Wallet
+          <span className="hidden sm:inline">Connect Wallet</span>
+          <span className="sm:hidden">Connect</span>
         </Button>
       </div>
     </header>
