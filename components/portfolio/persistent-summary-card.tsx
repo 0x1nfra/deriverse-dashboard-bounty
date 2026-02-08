@@ -9,9 +9,11 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  ReferenceLine,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 // Time period options
 const timePeriods = [
@@ -56,6 +58,7 @@ function generateChartData(periodHours: number | null) {
             : 365;
   const now = new Date();
 
+  // Generate realistic looking portfolio value data
   let currentValue = baseValue;
   for (let i = points; i >= 0; i--) {
     const timeOffset =
@@ -70,18 +73,31 @@ function generateChartData(periodHours: number | null) {
               : i * 24 * 60 * 60 * 1000;
 
     const date = new Date(now.getTime() - timeOffset);
+
+    // Add some random walk
     const change = (Math.random() - 0.48) * (baseValue * 0.02);
     currentValue = Math.max(currentValue + change, baseValue * 0.5);
+
+    // Calculate profit/loss from starting value (baseValue)
+    const pnlValue = currentValue - baseValue;
 
     data.push({
       date:
         periodHours === 24
-          ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          ? date.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           : periodHours === 168
-            ? date.toLocaleDateString([], { weekday: "short", hour: "2-digit" })
+            ? date.toLocaleDateString([], {
+                weekday: "short",
+                hour: "2-digit",
+              })
             : date.toLocaleDateString([], { month: "short", day: "numeric" }),
       timestamp: date.getTime(),
       value: currentValue,
+      pnl: pnlValue, // Profit/loss value
+      isPositive: pnlValue >= 0,
     });
   }
 
@@ -90,19 +106,40 @@ function generateChartData(periodHours: number | null) {
 
 interface ChartTooltipProps {
   active?: boolean;
-  payload?: Array<{ value: number; payload: { timestamp: number } }>;
+  payload?: Array<{
+    value: number;
+    payload: { timestamp: number; pnl: number; isPositive: boolean };
+  }>;
   label?: string;
 }
 
 function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const isPositive = data.pnl >= 0;
+
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg min-w-[180px]">
         <p className="text-sm text-muted-foreground mb-2">{label}</p>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 mb-1">
           <span className="text-sm text-muted-foreground">Value:</span>
           <span className="text-base font-semibold font-mono text-foreground">
             ${payload[0].value.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm text-muted-foreground">PnL:</span>
+          <span
+            className={cn(
+              "text-sm font-mono font-medium",
+              isPositive ? "text-emerald-500" : "text-rose-500"
+            )}
+          >
+            {isPositive ? "+" : ""}
+            {data.pnl.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -140,14 +177,11 @@ function MetricRow({ label, value, isPositive, isNegative }: MetricRowProps) {
 }
 
 function MetricDivider() {
-  return (
-    <hr className="h-px bg-border/50 my-2 border-0" />
-  );
+  return <hr className="h-px bg-border/50 my-2 border-0" />;
 }
 
 export function PersistentSummaryCard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7D");
-  const [isHovered, setIsHovered] = useState(false);
 
   // Account metrics
   const accountMetrics = {
@@ -191,19 +225,24 @@ export function PersistentSummaryCard() {
           <div className="mb-3">
             <span className="text-xs text-muted-foreground">Account Value</span>
             <div className="text-[32px] font-bold font-mono text-foreground leading-tight mt-1">
-              ${accountMetrics.accountValue.value.toLocaleString(undefined, {
+              $
+              {accountMetrics.accountValue.value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
             </div>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className={cn(
-                "text-sm font-mono font-medium",
-                accountMetrics.accountValue.isPositive
-                  ? "text-emerald-500"
-                  : "text-rose-500"
-              )}>
-                <span className="text-xs">{accountMetrics.accountValue.isPositive ? "↗" : "↘"}</span>
+              <span
+                className={cn(
+                  "text-sm font-mono font-medium",
+                  accountMetrics.accountValue.isPositive
+                    ? "text-emerald-500"
+                    : "text-rose-500"
+                )}
+              >
+                <span className="text-xs">
+                  {accountMetrics.accountValue.isPositive ? "↗" : "↘"}
+                </span>
                 {accountMetrics.accountValue.isPositive ? "+" : ""}
                 ${accountMetrics.accountValue.change.toLocaleString(
                   undefined,
@@ -221,7 +260,10 @@ export function PersistentSummaryCard() {
           <div className="space-y-1">
             <MetricRow
               label="PnL"
-              value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(undefined, { minimumFractionDigits: 2 })} (${metrics.pnl.isPositive ? "+" : ""}${metrics.pnl.percent}%)`}
+              value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(
+                undefined,
+                { minimumFractionDigits: 2 }
+              )} (${metrics.pnl.isPositive ? "+" : ""}${metrics.pnl.percent}%)`}
               isPositive={metrics.pnl.isPositive}
             />
             <MetricRow
@@ -241,15 +283,21 @@ export function PersistentSummaryCard() {
           <div className="space-y-1">
             <MetricRow
               label="Total Equity"
-              value={`$${metrics.totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              value={`$${metrics.totalEquity.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}`}
             />
             <MetricRow
               label="Perps Equity"
-              value={`$${metrics.perpsEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              value={`$${metrics.perpsEquity.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}`}
             />
             <MetricRow
               label="Spot Equity"
-              value={`$${metrics.spotEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              value={`$${metrics.spotEquity.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}`}
             />
           </div>
 
@@ -268,7 +316,7 @@ export function PersistentSummaryCard() {
           </div>
         </div>
 
-        {/* Right Side - Chart */}
+        {/* Right Side - Chart with Two Colors */}
         <div className="p-6 bg-gradient-to-br from-transparent to-muted/20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Portfolio Value</h3>
@@ -290,11 +338,7 @@ export function PersistentSummaryCard() {
             </div>
           </div>
 
-          <div
-            className="h-[280px] -mx-2"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
+          <div className="h-[280px] -mx-2">
             <ChartContainer config={chartConfig} className="h-full w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
@@ -363,7 +407,7 @@ export function PersistentSummaryCard() {
                     stroke={
                       isChartPositive ? "var(--success)" : "var(--destructive)"
                     }
-                    strokeWidth={isHovered ? 3 : 2}
+                    strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#persistentGradient)"
                     animationDuration={800}
