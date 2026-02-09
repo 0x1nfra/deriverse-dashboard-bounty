@@ -160,7 +160,7 @@ interface MetricRowProps {
 
 function MetricRow({ label, value, isPositive, isNegative }: MetricRowProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-0">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span
         className={cn(
@@ -174,10 +174,6 @@ function MetricRow({ label, value, isPositive, isNegative }: MetricRowProps) {
       </span>
     </div>
   );
-}
-
-function MetricDivider() {
-  return <hr className="h-px bg-border/50 my-2 border-0" />;
 }
 
 export function PersistentSummaryCard() {
@@ -220,11 +216,11 @@ export function PersistentSummaryCard() {
     <div className="bg-card border border-border rounded-xl overflow-hidden mb-6 shadow-sm hover:shadow-md transition-shadow duration-300">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         {/* Left Side - Compact Metrics Panel */}
-        <div className="p-5 lg:border-r border-border">
+        <div className="p-3 lg:border-r border-border">
           {/* Primary Metric - Account Value */}
-          <div className="mb-3">
+          <div className="mb-1">
             <span className="text-xs text-muted-foreground">Account Value</span>
-            <div className="text-[32px] font-bold font-mono text-foreground leading-tight mt-1">
+            <div className="text-[24px] font-bold font-mono text-foreground leading-tight mt-1">
               $
               {accountMetrics.accountValue.value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -254,10 +250,8 @@ export function PersistentSummaryCard() {
             </div>
           </div>
 
-          <MetricDivider />
-
-          {/* Core Metrics */}
-          <div className="space-y-1">
+          {/* All Metrics - Single continuous list */}
+          <div className="space-y-0.5">
             <MetricRow
               label="PnL"
               value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(
@@ -275,12 +269,6 @@ export function PersistentSummaryCard() {
               value={`${metrics.maxDrawdown.value}%`}
               isNegative={true}
             />
-          </div>
-
-          <MetricDivider />
-
-          {/* Equity Breakdown */}
-          <div className="space-y-1">
             <MetricRow
               label="Total Equity"
               value={`$${metrics.totalEquity.toLocaleString(undefined, {
@@ -299,27 +287,21 @@ export function PersistentSummaryCard() {
                 minimumFractionDigits: 2,
               })}`}
             />
-          </div>
-
-          <MetricDivider />
-
-          {/* Performance Ratios */}
-          <div className="space-y-1">
-            <MetricRow
-              label="Sharpe Ratio"
-              value={metrics.sharpeRatio.toFixed(2)}
-            />
             <MetricRow
               label="Win Rate"
               value={`${metrics.winRate.value}% (${metrics.winRate.trades})`}
+            />
+            <MetricRow
+              label="Sharpe Ratio"
+              value={metrics.sharpeRatio.toFixed(2)}
             />
           </div>
         </div>
 
         {/* Right Side - Chart with Two Colors */}
-        <div className="p-6 bg-gradient-to-br from-transparent to-muted/20">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Portfolio Value</h3>
+        <div className="p-3 bg-gradient-to-br from-transparent to-muted/20">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-base font-semibold text-foreground">Portfolio Value</h3>
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
               {timePeriods.map((period) => (
                 <button
@@ -338,7 +320,7 @@ export function PersistentSummaryCard() {
             </div>
           </div>
 
-          <div className="h-[280px] -mx-2">
+          <div className="h-[220px] -mx-2">
             <ChartContainer config={chartConfig} className="h-full w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart

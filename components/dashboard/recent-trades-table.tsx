@@ -39,6 +39,8 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
     amount: string
     price: string
     symbol: string
+    pnl: number
+    pnlPercentage: number
   } | null>(null)
 
   // Use provided trades or fallback to default mock data
@@ -50,8 +52,14 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
         price: trade.entryPrice.toLocaleString("en-US"),
         time: formatTimeAgo(trade.timestamp),
         symbol: trade.symbol,
+        pnl: trade.pnl,
+        pnlPercentage: trade.pnlPercentage,
       }))
-    : defaultRecentTrades
+    : defaultRecentTrades.map((trade) => ({
+        ...trade,
+        pnl: 0,
+        pnlPercentage: 0,
+      }))
 
   const handleJournalClick = (trade: typeof recentTrades[0]) => {
     setSelectedTrade(trade)
@@ -74,6 +82,7 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
                 <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">P&L</th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Time</th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">Actions</th>
               </tr>
@@ -94,6 +103,22 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
                   </td>
                   <td className="px-5 py-3 text-sm font-mono text-muted-foreground">{trade.amount}</td>
                   <td className="px-5 py-3 text-sm font-mono text-muted-foreground">${trade.price}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex flex-col">
+                      <span className={cn(
+                        "text-sm font-mono font-semibold",
+                        trade.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                      )}>
+                        {trade.pnl >= 0 ? '+' : ''}${Math.abs(trade.pnl).toFixed(2)}
+                      </span>
+                      <span className={cn(
+                        "text-xs font-mono",
+                        trade.pnl >= 0 ? "text-emerald-500/80" : "text-rose-500/80"
+                      )}>
+                        ({trade.pnl >= 0 ? '+' : ''}{trade.pnlPercentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-5 py-3 text-sm text-muted-foreground text-right">{trade.time}</td>
                   <td className="px-5 py-3 text-right">
                     <Button
