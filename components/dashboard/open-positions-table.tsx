@@ -57,12 +57,12 @@ const defaultOpenPositions: Position[] = [
     pnlUsd: 190
   },
   { 
-    pair: "XRP/USD", 
+    pair: "XRP/USD",
     side: "long",
-    size: "1000", 
-    entryPrice: 0.52, 
-    currentPrice: 0.48, 
-    liqPrice: 0.45,
+    size: "1000",
+    entryPrice: 0.52,
+    currentPrice: 0.48,
+    liqPrice: 0.465,
     marginPercent: 5.2,
     pnl: "-7.7%", 
     pnlPositive: false,
@@ -193,9 +193,16 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
                   <td className="px-5 py-3 text-sm font-mono text-muted-foreground">${position.currentPrice.toLocaleString()}</td>
                   <td className="px-5 py-3">
                     <span className={cn(
-                      "text-sm font-mono",
-                      getLiqRiskColor(liqRisk.risk)
+                      "inline-flex items-center gap-1.5 text-sm font-mono px-2 py-0.5 rounded",
+                      getLiqRiskColor(liqRisk.risk),
+                      getLiqRiskBg(liqRisk.risk)
                     )}>
+                      <span className={cn(
+                        "w-1.5 h-1.5 rounded-full",
+                        liqRisk.risk === "safe" && "bg-emerald-500",
+                        liqRisk.risk === "caution" && "bg-amber-500",
+                        liqRisk.risk === "danger" && "bg-rose-500"
+                      )} />
                       ${position.liqPrice.toLocaleString()}
                     </span>
                   </td>
