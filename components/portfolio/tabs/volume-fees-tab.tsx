@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 
 import { getVolumeMetrics, getFeeMetrics, getDailyVolumeData, formatCurrency, formatPercentage } from "@/lib/mock/trades"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
+import { useFilters } from "@/hooks/use-filters"
+import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 import { OrderTypeAnalysis } from "@/components/analytics/order-type-analysis"
 
 const timePeriods = [
@@ -20,18 +22,35 @@ export function VolumeFeesTabContent() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
   const [isClient, setIsClient] = useState(false)
   const days = timePeriods.find(p => p.id === selectedPeriod)?.days || 7
-  
+
   // Use filtered trades from global filters
-  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { resetFilters, isDefault } = useFilters()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // Calculate metrics based on filtered trades
+  // Calculate metrics - must be called before any early returns to maintain hook order
   const volumeMetrics = useMemo(() => getVolumeMetrics(filteredTrades), [filteredTrades])
   const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
   const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, days), [filteredTrades, days])
+
+  // Handle empty states - after all hooks are called
+  if (!isLoading && isClient && filteredTrades.length === 0) {
+    if (isDefault) {
+      return (
+        <div className="space-y-6">
+          <NoTradesState />
+        </div>
+      )
+    }
+    return (
+      <div className="space-y-6">
+        <NoFilterResultsState onClearFilters={resetFilters} />
+      </div>
+    )
+  }
 
   // Fee breakdown data for donut chart - updated colors
   const feeBreakdownData = [
@@ -48,14 +67,6 @@ export function VolumeFeesTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-        <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
-          Track your trading volume and fee impact • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
-        </p>
-      </div>
-
       {/* Volume Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <VolumeCard
@@ -112,12 +123,6 @@ export function VolumeFeesTabContent() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#5471f6" />
-                      <stop offset="100%" stopColor="#06B6D4" />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
                   <XAxis
                     dataKey="date"
@@ -141,11 +146,11 @@ export function VolumeFeesTabContent() {
                     itemStyle={{ color: "#FFFFFF" }}
                     formatter={(value: number) => [formatCurrency(value), "Volume"]}
                   />
-                  <Bar 
-                    dataKey="volume" 
-                    fill="url(#volumeGradient)" 
+                  <Bar
+                    dataKey="volume"
+                    fill="#0EA5E9"
                     radius={[4, 4, 0, 0]}
-                    activeBar={{ fill: "#5471f6", fillOpacity: 0.8 }}
+                    activeBar={{ fill: "#0EA5E9", fillOpacity: 0.7 }}
                   />
                 </BarChart>
               </ResponsiveContainer>

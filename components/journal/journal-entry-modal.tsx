@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, Upload, TrendingUp, TrendingDown, BarChart3, FileText, Smile, Image as ImageIcon, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { getJournalEntryByTradeId } from "@/lib/mock/journal-data"
 
 interface JournalEntryModalProps {
   isOpen: boolean
@@ -54,6 +55,54 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId }: JournalEn
     entryRationale: "",
     exitRationale: "",
   })
+
+  // Populate form data when editing an existing entry
+  useEffect(() => {
+    if (editingEntryId) {
+      const entry = getJournalEntryByTradeId(editingEntryId)
+      if (entry) {
+        setFormData({
+          assetPair: `${entry.symbol}-PERP`,
+          direction: entry.side,
+          entryPrice: entry.entryPrice.toString(),
+          exitPrice: entry.exitPrice.toString(),
+          positionSize: entry.size.toString(),
+          positionUnit: entry.symbol,
+          tradeDate: entry.timestamp.toISOString().slice(0, 16),
+          strategy: entry.strategy,
+          setupDescription: entry.setupDescription,
+          entryRationale: entry.entryRationale,
+          exitRationale: entry.exitRationale,
+        })
+        
+        // Set emotional state
+        const emotionIndex = emotionalStates.findIndex(
+          state => state.label === entry.emotionalState.label
+        )
+        setSelectedEmotion(emotionIndex >= 0 ? emotionIndex : null)
+        
+        // Set tags
+        setSelectedTags(entry.tags)
+      }
+    } else {
+      // Reset to defaults for new entry
+      setFormData({
+        assetPair: "SOL-PERP",
+        direction: "long",
+        entryPrice: "",
+        exitPrice: "",
+        positionSize: "",
+        positionUnit: "SOL",
+        tradeDate: "",
+        strategy: "",
+        setupDescription: "",
+        entryRationale: "",
+        exitRationale: "",
+      })
+      setSelectedEmotion(null)
+      setSelectedTags([])
+    }
+  }, [editingEntryId, isOpen])
 
   // Calculate P&L with direction
   const entryPrice = parseFloat(formData.entryPrice) || 0
