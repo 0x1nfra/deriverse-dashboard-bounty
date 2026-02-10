@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-02-11
+
+### Changed
+
+- Complete refresh of color palette with improved contrast and visual hierarchy
+- Updated design system with refined cyan and purple accent colors for better data differentiation
+- Restructured mock data for improved realism and consistency across components
+- Refined positions table layout with better spacing, typography, and status indicators
+- Enhanced journal card design with improved visual separation and annotation displays
+- Optimized portfolio metric cards with clearer typography and better responsive behavior
+- Updated summary dashboard layout with improved spacing and information density
+- Redesigned trading tabs interface with better active state indicators and transitions
+- Overall visual refinement across dashboard, analytics, and portfolio views
+
 ## [0.1.0] - 2025-02-07
 
 ### Added
