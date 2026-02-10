@@ -142,7 +142,7 @@ export function AnalyticsTabContent() {
       <AssetAllocationBarChart data={allocationData} />
 
       {/* Equity Curve Chart */}
-      <EquityCurveChart />
+      <EquityCurveChart trades={filteredTrades} />
 
       {/* Strategy Performance Table */}
       <StrategyPerformanceTable />

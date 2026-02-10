@@ -139,7 +139,7 @@ const sampleTrades: Partial<Trade>[] = [
     pnl: -85.0,
     pnlPercentage: -7.23,
     timestamp: new Date("2025-01-12T11:20:00"),
-    duration: 360,
+    duration: 2040,
   },
   {
     id: "trade-0005",
@@ -187,7 +187,7 @@ const sampleTrades: Partial<Trade>[] = [
     pnl: -90.0,
     pnlPercentage: -4.05,
     timestamp: new Date("2025-01-08T14:20:00"),
-    duration: 300,
+    duration: 1500,
   },
 ]
 
@@ -248,6 +248,11 @@ export function getJournalEntryByTradeId(tradeId: string): JournalEntry | undefi
 export function formatDuration(minutes: number): string {
   if (minutes < 60) {
     return `${minutes}m`
+  }
+  if (minutes >= 1440) {
+    const days = Math.floor(minutes / 1440)
+    const hours = Math.floor((minutes % 1440) / 60)
+    return hours > 0 ? `${days}d ${hours}h` : `${days}d`
   }
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60

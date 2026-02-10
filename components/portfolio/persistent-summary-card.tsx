@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Area,
   AreaChart,
@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronDown, ChevronRight, BarChart3, Minus } from "lucide-react";
 
 // Time period options
 const timePeriods = [
@@ -178,6 +178,9 @@ function MetricRow({ label, value, isPositive, isNegative }: MetricRowProps) {
 
 export function PersistentSummaryCard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7D");
+  const [showAllMetrics, setShowAllMetrics] = useState(false);
+  const [showChart, setShowChart] = useState(false);
+  const [cardCollapsed, setCardCollapsed] = useState(false);
 
   // Account metrics
   const accountMetrics = {
@@ -212,192 +215,269 @@ export function PersistentSummaryCard() {
     chartData.length > 1 &&
     chartData[chartData.length - 1].value >= chartData[0].value;
 
-  return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden mb-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-        {/* Left Side - Compact Metrics Panel */}
-        <div className="p-3 lg:border-r border-border">
-          {/* Primary Metric - Account Value */}
-          <div className="mb-1">
-            <span className="text-xs text-muted-foreground">Account Value</span>
-            <div className="text-[24px] font-bold font-mono text-foreground leading-tight mt-1">
-              $
-              {accountMetrics.accountValue.value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span
-                className={cn(
-                  "text-sm font-mono font-medium",
-                  accountMetrics.accountValue.isPositive
-                    ? "text-emerald-500"
-                    : "text-rose-500"
-                )}
-              >
-                <span className="text-xs">
-                  {accountMetrics.accountValue.isPositive ? "↗" : "↘"}
-                </span>
-                {accountMetrics.accountValue.isPositive ? "+" : ""}
-                ${accountMetrics.accountValue.change.toLocaleString(
-                  undefined,
-                  { minimumFractionDigits: 2 }
-                )}
-                ({accountMetrics.accountValue.isPositive ? "+" : ""}
-                {accountMetrics.accountValue.changePercent}%)
-              </span>
-            </div>
-          </div>
+  // Primary metrics always shown on mobile
+  const primaryMetrics = (
+    <>
+      <MetricRow
+        label="PnL"
+        value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(
+          undefined,
+          { minimumFractionDigits: 2 }
+        )} (${metrics.pnl.isPositive ? "+" : ""}${metrics.pnl.percent}%)`}
+        isPositive={metrics.pnl.isPositive}
+      />
+      <MetricRow
+        label="Volume"
+        value={`$${(metrics.volume.value / 1000).toFixed(1)}K`}
+      />
+      <MetricRow
+        label="Max Drawdown"
+        value={`${metrics.maxDrawdown.value}%`}
+        isNegative={true}
+      />
+    </>
+  );
 
-          {/* All Metrics - Single continuous list */}
-          <div className="space-y-0.5">
-            <MetricRow
-              label="PnL"
-              value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(
-                undefined,
-                { minimumFractionDigits: 2 }
-              )} (${metrics.pnl.isPositive ? "+" : ""}${metrics.pnl.percent}%)`}
-              isPositive={metrics.pnl.isPositive}
-            />
-            <MetricRow
-              label="Volume"
-              value={`$${(metrics.volume.value / 1000).toFixed(1)}K`}
-            />
-            <MetricRow
-              label="Max Drawdown"
-              value={`${metrics.maxDrawdown.value}%`}
-              isNegative={true}
-            />
-            <MetricRow
-              label="Total Equity"
-              value={`$${metrics.totalEquity.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}`}
-            />
-            <MetricRow
-              label="Perps Equity"
-              value={`$${metrics.perpsEquity.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}`}
-            />
-            <MetricRow
-              label="Spot Equity"
-              value={`$${metrics.spotEquity.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}`}
-            />
-            <MetricRow
-              label="Win Rate"
-              value={`${metrics.winRate.value}% (${metrics.winRate.trades})`}
-            />
-            <MetricRow
-              label="Sharpe Ratio"
-              value={metrics.sharpeRatio.toFixed(2)}
-            />
-          </div>
+  // Extra metrics hidden by default on mobile
+  const extraMetrics = (
+    <>
+      <MetricRow
+        label="Total Equity"
+        value={`$${metrics.totalEquity.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        })}`}
+      />
+      <MetricRow
+        label="Perps Equity"
+        value={`$${metrics.perpsEquity.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        })}`}
+      />
+      <MetricRow
+        label="Spot Equity"
+        value={`$${metrics.spotEquity.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        })}`}
+      />
+      <MetricRow
+        label="Win Rate"
+        value={`${metrics.winRate.value}% (${metrics.winRate.trades})`}
+      />
+      <MetricRow
+        label="Sharpe Ratio"
+        value={metrics.sharpeRatio.toFixed(2)}
+      />
+    </>
+  );
+
+  const chartSection = (
+    <div className="p-3 bg-gradient-to-br from-transparent to-muted/20">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-base font-semibold text-foreground">Portfolio Value</h3>
+        <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+          {timePeriods.map((period) => (
+            <button
+              key={period.label}
+              onClick={() => setSelectedPeriod(period.label)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                selectedPeriod === period.label
+                  ? "bg-card text-foreground shadow-sm border border-border"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              {period.label}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Right Side - Chart with Two Colors */}
-        <div className="p-3 bg-gradient-to-br from-transparent to-muted/20">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-base font-semibold text-foreground">Portfolio Value</h3>
-            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-              {timePeriods.map((period) => (
-                <button
-                  key={period.label}
-                  onClick={() => setSelectedPeriod(period.label)}
+      <div className="h-[220px] -mx-2">
+        <ChartContainer config={chartConfig} className="h-full w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id="persistentGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={
+                      isChartPositive
+                        ? "var(--success)"
+                        : "var(--destructive)"
+                    }
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={
+                      isChartPositive
+                        ? "var(--success)"
+                        : "var(--destructive)"
+                    }
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--chart-grid)"
+                vertical={false}
+                opacity={0.5}
+              />
+
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                interval="preserveStartEnd"
+                minTickGap={30}
+              />
+
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                tickFormatter={formatCurrency}
+                domain={["auto", "auto"]}
+                width={50}
+              />
+
+              <Tooltip content={<ChartTooltip />} />
+
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={
+                  isChartPositive ? "var(--success)" : "var(--destructive)"
+                }
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#persistentGradient)"
+                animationDuration={800}
+                animationEasing="ease-out"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-card border border-border rounded-lg overflow-hidden mb-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+      {/* Mobile collapse header - only visible on small screens */}
+      <div className="flex items-center justify-between px-3 py-2 lg:hidden border-b border-border">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Portfolio Summary</span>
+        <button
+          onClick={() => setCardCollapsed(!cardCollapsed)}
+          className="w-7 h-7 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground transition-colors"
+        >
+          {cardCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      {/* Card content - collapsible on mobile */}
+      <div className={cn(cardCollapsed && "hidden lg:block")}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+          {/* Left Side - Metrics Panel */}
+          <div className="p-3 lg:border-r border-border">
+            {/* Primary Metric - Account Value */}
+            <div className="mb-1">
+              <span className="text-xs text-muted-foreground">Account Value</span>
+              <div className="text-[24px] font-bold font-mono text-foreground leading-tight mt-1">
+                $
+                {accountMetrics.accountValue.value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span
                   className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
-                    selectedPeriod === period.label
-                      ? "bg-card text-foreground shadow-sm border border-border"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    "text-sm font-mono font-medium",
+                    accountMetrics.accountValue.isPositive
+                      ? "text-emerald-500"
+                      : "text-rose-500"
                   )}
                 >
-                  {period.label}
+                  <span className="text-xs">
+                    {accountMetrics.accountValue.isPositive ? "↗" : "↘"}
+                  </span>
+                  {accountMetrics.accountValue.isPositive ? "+" : ""}
+                  ${accountMetrics.accountValue.change.toLocaleString(
+                    undefined,
+                    { minimumFractionDigits: 2 }
+                  )}
+                  ({accountMetrics.accountValue.isPositive ? "+" : ""}
+                  {accountMetrics.accountValue.changePercent}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Metrics list */}
+            <div className="space-y-0.5">
+              {primaryMetrics}
+
+              {/* Extra metrics: always visible on desktop, toggle on mobile */}
+              <div className="hidden lg:block">
+                {extraMetrics}
+              </div>
+
+              {/* Mobile: collapsible extra metrics */}
+              <div className="lg:hidden">
+                {showAllMetrics && extraMetrics}
+                <button
+                  onClick={() => setShowAllMetrics(!showAllMetrics)}
+                  className="w-full mt-2 py-1.5 text-[11px] font-medium text-primary/80 hover:text-primary bg-primary/[0.05] hover:bg-primary/[0.1] border border-primary/20 rounded-md transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {showAllMetrics ? "Show Less" : "Show More"}
+                  <ChevronDown className={cn("h-3 w-3 transition-transform", showAllMetrics && "rotate-180")} />
                 </button>
-              ))}
+              </div>
             </div>
           </div>
 
-          <div className="h-[220px] -mx-2">
-            <ChartContainer config={chartConfig} className="h-full w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={chartData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          {/* Right Side - Chart */}
+          {/* Desktop: always visible */}
+          <div className="hidden lg:block">
+            {chartSection}
+          </div>
+
+          {/* Mobile: collapsible chart */}
+          <div className="lg:hidden border-t border-border">
+            {showChart ? (
+              <>
+                <button
+                  onClick={() => setShowChart(false)}
+                  className="w-full px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <defs>
-                    <linearGradient
-                      id="persistentGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor={
-                          isChartPositive
-                            ? "var(--success)"
-                            : "var(--destructive)"
-                        }
-                        stopOpacity={0.25}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor={
-                          isChartPositive
-                            ? "var(--success)"
-                            : "var(--destructive)"
-                        }
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
-
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="var(--chart-grid)"
-                    vertical={false}
-                    opacity={0.5}
-                  />
-
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-                    interval="preserveStartEnd"
-                    minTickGap={30}
-                  />
-
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-                    tickFormatter={formatCurrency}
-                    domain={["auto", "auto"]}
-                    width={50}
-                  />
-
-                  <Tooltip content={<ChartTooltip />} />
-
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={
-                      isChartPositive ? "var(--success)" : "var(--destructive)"
-                    }
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#persistentGradient)"
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+                  <BarChart3 className="h-3 w-3" />
+                  Hide Chart
+                  <ChevronDown className="h-3 w-3 rotate-180" />
+                </button>
+                {chartSection}
+              </>
+            ) : (
+              <button
+                onClick={() => setShowChart(true)}
+                className="w-full px-3 py-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <BarChart3 className="h-3 w-3" />
+                Show Chart
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            )}
           </div>
         </div>
       </div>

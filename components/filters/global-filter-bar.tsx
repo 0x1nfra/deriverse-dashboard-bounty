@@ -11,13 +11,13 @@ export function GlobalFilterBar() {
   const { activeFilterCount, isDefault, resetFilters } = useFilters()
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-3 px-1 border-b border-border mb-6">
+    <div className="flex items-center justify-between gap-3 py-3 px-1 border-b border-border mb-6 flex-wrap">
       <div className="flex items-center gap-2 flex-wrap">
         <SymbolFilter />
         <DateRangeFilter />
       </div>
 
-      <div className="flex items-center gap-2 sm:ml-auto">
+      <div className="flex items-center gap-2">
         {!isDefault && (
           <>
             <Badge

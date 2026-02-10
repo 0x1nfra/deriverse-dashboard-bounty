@@ -50,24 +50,12 @@ export function RiskTabContent() {
     if (isDefault) {
       return (
         <div className="space-y-6">
-          <div className="mb-2">
-            <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Risk management metrics and trade analysis
-            </p>
-          </div>
           <NoTradesState />
         </div>
       )
     }
     return (
       <div className="space-y-6">
-        <div className="mb-2">
-          <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Risk management metrics and trade analysis
-          </p>
-        </div>
         <NoFilterResultsState onClearFilters={resetFilters} />
       </div>
     )
@@ -75,14 +63,6 @@ export function RiskTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-xl font-semibold text-foreground">Risk Analytics</h2>
-        <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
-          Risk management metrics and trade analysis • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
-        </p>
-      </div>
-
       {/* Section 1: Extreme Trades */}
       <section className="space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">

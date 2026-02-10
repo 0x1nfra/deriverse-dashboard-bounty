@@ -1,15 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
-  Line,
-  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
   Area,
   ComposedChart,
+  Line,
 } from "recharts"
 import {
   ChartContainer,
@@ -17,33 +16,81 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { cn } from "@/lib/utils"
+import { Trade } from "@/lib/mock/trades"
 
-// Mock equity curve data matching the mockup
-const equityData = [
-  { period: "7D", primary: 10000, secondary: 9500 },
-  { period: "30D", primary: 12000, secondary: 11000 },
-  { period: "30D-2", primary: 14000, secondary: 13500 },
-  { period: "90D", primary: 18000, secondary: 16000 },
-  { period: "20D", primary: 22000, secondary: 19000 },
-  { period: "20D-2", primary: 20000, secondary: 21000 },
-  { period: "ALL", primary: 24000, secondary: 22500 },
+interface EquityCurveChartProps {
+  trades: Trade[]
+}
+
+const timePeriods = [
+  { label: "7D", days: 7 },
+  { label: "30D", days: 30 },
+  { label: "90D", days: 90 },
+  { label: "1Y", days: 365 },
+  { label: "ALL", days: null },
 ]
 
-const timePeriods = ["7D", "30D", "90D", "1Y", "ALL"]
-
 const chartConfig = {
-  primary: {
-    label: "Portfolio",
+  equity: {
+    label: "Equity",
     color: "#5471f6",
   },
-  secondary: {
+  benchmark: {
     label: "Benchmark",
     color: "#3B82F6",
   },
 }
 
-export function EquityCurveChart() {
-  const [selectedPeriod, setSelectedPeriod] = useState("1Y")
+const STARTING_CAPITAL = 40000
+
+export function EquityCurveChart({ trades }: EquityCurveChartProps) {
+  const [selectedPeriod, setSelectedPeriod] = useState("ALL")
+
+  // Build cumulative equity curve from trades grouped by date
+  const allData = useMemo(() => {
+    if (trades.length === 0) return []
+
+    const sorted = [...trades].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    )
+
+    // Group PnL by date
+    const dateMap = new Map<string, number>()
+    let cumulativePnl = 0
+
+    for (const trade of sorted) {
+      const dateKey = trade.timestamp.toISOString().split("T")[0]
+      cumulativePnl += trade.pnl
+      dateMap.set(dateKey, cumulativePnl)
+    }
+
+    const entries = Array.from(dateMap.entries())
+    if (entries.length === 0) return []
+
+    // Build benchmark: linear growth from start to end equity
+    const finalEquity = STARTING_CAPITAL + cumulativePnl
+    const benchmarkStep =
+      entries.length > 1
+        ? (finalEquity - STARTING_CAPITAL) / (entries.length - 1)
+        : 0
+
+    return entries.map(([dateStr, pnl], i) => ({
+      date: dateStr,
+      dateFormatted: new Date(dateStr).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      }),
+      equity: STARTING_CAPITAL + pnl,
+      benchmark: STARTING_CAPITAL + benchmarkStep * i,
+    }))
+  }, [trades])
+
+  // Filter by selected period
+  const chartData = useMemo(() => {
+    const period = timePeriods.find((p) => p.label === selectedPeriod)
+    if (!period || !period.days) return allData
+    return allData.slice(-period.days)
+  }, [allData, selectedPeriod])
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -52,16 +99,16 @@ export function EquityCurveChart() {
         <div className="flex items-center gap-1">
           {timePeriods.map((period) => (
             <button
-              key={period}
-              onClick={() => setSelectedPeriod(period)}
+              key={period.label}
+              onClick={() => setSelectedPeriod(period.label)}
               className={cn(
                 "px-3 py-1 text-xs font-medium rounded-md transition-colors",
-                selectedPeriod === period
+                selectedPeriod === period.label
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
-              {period}
+              {period.label}
             </button>
           ))}
         </div>
@@ -70,46 +117,56 @@ export function EquityCurveChart() {
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={equityData}
+              data={chartData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
             >
-              <defs>
-                <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#5471f6" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--chart-grid)"
+                vertical={false}
+                opacity={0.5}
+              />
               <XAxis
-                dataKey="period"
+                dataKey="dateFormatted"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                interval="preserveStartEnd"
+                minTickGap={40}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                tickFormatter={(value) =>
+                  value >= 1000
+                    ? `$${(value / 1000).toFixed(0)}K`
+                    : `$${value}`
+                }
+                width={50}
               />
               <ChartTooltip
                 content={<ChartTooltipContent />}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+                formatter={(value: number) => [
+                  `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  "",
+                ]}
               />
               <Area
                 type="monotone"
-                dataKey="primary"
-                stroke="#5471f6"
+                dataKey="equity"
+                stroke="#0EA5E9"
                 strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#equityGradient)"
+                fillOpacity={0.08}
+                fill="#0EA5E9"
               />
               <Line
                 type="monotone"
-                dataKey="secondary"
+                dataKey="benchmark"
                 stroke="#3B82F6"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 dot={false}
+                strokeDasharray="4 4"
               />
             </ComposedChart>
           </ResponsiveContainer>

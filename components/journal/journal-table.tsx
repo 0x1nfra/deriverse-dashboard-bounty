@@ -177,63 +177,60 @@ function JournalCard({ entry, isExpanded, onCardClick, onEditClick }: JournalCar
             <div className="border-t border-border bg-secondary/20">
               <div className="p-4">
                 {/* Section 1: Trade Details */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {/* Entry/Exit */}
-                    <div>
-                      <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                        Entry → Exit
-                      </div>
-                      <div className="text-sm font-mono text-foreground">
-                        {formatCurrency(entry.entryPrice)}
-                      </div>
-                      <div className="text-sm font-mono text-muted-foreground">
-                        → {formatCurrency(entry.exitPrice)}
-                      </div>
+                {/* Trade Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {/* Entry Price */}
+                  <div className="bg-white/[0.03] rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Entry
                     </div>
-
-                    {/* Position Size */}
-                    <div>
-                      <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                        Position Size
-                      </div>
-                      <div className="text-sm font-mono text-foreground">
-                        {entry.size.toLocaleString()} {entry.symbol}
-                      </div>
-                    </div>
-
-                    {/* Duration */}
-                    <div>
-                      <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                        Duration
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-foreground">
-                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>{formatDuration(entry.duration)}</span>
-                      </div>
-                    </div>
-
-                    {/* Strategy */}
-                    <div>
-                      <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                        Strategy
-                      </div>
-                      <div className="text-sm text-foreground font-medium">
-                        {entry.strategy}
-                      </div>
+                    <div className="text-sm font-mono font-medium text-foreground">
+                      {formatCurrency(entry.entryPrice)}
                     </div>
                   </div>
 
-                  {/* Emotional State */}
-                  <div className="flex items-center gap-3">
-                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      Emotional State:
+                  {/* Exit Price */}
+                  <div className="bg-white/[0.03] rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Exit
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{entry.emotionalState.emoji}</span>
-                      <span className="text-sm text-foreground">
-                        {entry.emotionalState.label}
-                      </span>
+                    <div className={cn(
+                      "text-sm font-mono font-medium",
+                      entry.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                    )}>
+                      {formatCurrency(entry.exitPrice)}
+                    </div>
+                  </div>
+
+                  {/* Position Size */}
+                  <div className="bg-white/[0.03] rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Size
+                    </div>
+                    <div className="text-sm font-mono font-medium text-foreground">
+                      {entry.size.toLocaleString()} <span className="text-muted-foreground text-xs">{entry.symbol}</span>
+                    </div>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="bg-white/[0.03] rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Duration
+                    </div>
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      <span>{formatDuration(entry.duration)}</span>
+                    </div>
+                  </div>
+
+                  {/* Strategy + Emotion */}
+                  <div className="bg-white/[0.03] rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Strategy
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{entry.strategy}</span>
+                      <span className="text-base" title={entry.emotionalState.label}>{entry.emotionalState.emoji}</span>
                     </div>
                   </div>
                 </div>
