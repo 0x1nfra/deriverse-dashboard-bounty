@@ -40,13 +40,7 @@ export function JournalTabContent() {
     if (isDefault) {
       return (
         <div className="space-y-6">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Trading Journal</h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Track and analyze your trades
-              </p>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               New Entry
@@ -58,13 +52,7 @@ export function JournalTabContent() {
     }
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Trading Journal</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Track and analyze your trades
-            </p>
-          </div>
+        <div className="flex items-center justify-end">
           <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
             New Entry
@@ -77,14 +65,7 @@ export function JournalTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Journal Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">Trading Journal</h2>
-          <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
-            Track and analyze your trades • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           New Entry

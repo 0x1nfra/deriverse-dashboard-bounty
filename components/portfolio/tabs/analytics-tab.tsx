@@ -4,14 +4,8 @@ import { useState, useMemo, useEffect } from "react"
 import { AnalyticsMetricCard } from "@/components/analytics/analytics-metric-card"
 import { EquityCurveChart } from "@/components/analytics/equity-curve-chart"
 import { StrategyPerformanceTable } from "@/components/analytics/strategy-performance-table"
-import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { PortfolioValueChart } from "@/components/portfolio/portfolio-value-chart"
+import { AssetAllocationBarChart } from "@/components/portfolio/asset-allocation-bar-chart"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 
 function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filteredTrades']) {
@@ -30,18 +24,13 @@ function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filtered
   const grossProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0)
   const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0))
   
-  // Calculate win rate
   const winRate = (winningTrades.length / trades.length) * 100
-  
-  // Calculate profit factor
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 999 : 0
   
-  // Calculate max drawdown (simplified)
   let maxDrawdown = 0
   let peak = 0
   let runningPnl = 0
   
-  // Sort trades by timestamp
   const sortedTrades = [...trades].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
   
   for (const trade of sortedTrades) {
@@ -55,11 +44,9 @@ function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filtered
     }
   }
   
-  // Calculate total return percentage (assuming $40k starting capital)
   const startingCapital = 40000
   const totalReturn = (totalPnl / startingCapital) * 100
   
-  // Calculate Sharpe ratio (simplified)
   const returns = trades.map(t => t.pnlPercentage)
   const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length
   const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
@@ -91,7 +78,6 @@ function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filtered
 }
 
 export function AnalyticsTabContent() {
-  const [exportMenuOpen, setExportMenuOpen] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const { filteredTrades, dateRangeLabel } = useFilteredTrades()
 
@@ -101,42 +87,27 @@ export function AnalyticsTabContent() {
   
   const analyticsMetrics = useMemo(() => calculateMetrics(filteredTrades), [filteredTrades])
 
-  const handleExport = (format: string) => {
-    console.log(`Exporting analytics data as ${format}`)
-    setExportMenuOpen(false)
-  }
+  // Calculate allocation data from filtered trades
+  const allocationData = useMemo(() => {
+    const symbolTotals = filteredTrades.reduce((acc, trade) => {
+      const notional = trade.size * trade.entryPrice
+      acc[trade.symbol] = (acc[trade.symbol] || 0) + notional
+      return acc
+    }, {} as Record<string, number>)
+
+    const total = Object.values(symbolTotals).reduce((sum, val) => sum + val, 0)
+    
+    return Object.entries(symbolTotals)
+      .map(([symbol, value]) => ({
+        symbol,
+        value,
+        percentage: total > 0 ? (value / total) * 100 : 0
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [filteredTrades])
 
   return (
     <div className="space-y-6">
-      {/* Analytics Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">Performance Analytics</h2>
-          <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
-            Detailed performance metrics • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
-          </p>
-        </div>
-        <DropdownMenu open={exportMenuOpen} onOpenChange={setExportMenuOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
-              Export
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleExport("csv")}>
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("pdf")}>
-              Export as PDF
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("json")}>
-              Export as JSON
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <AnalyticsMetricCard
@@ -164,8 +135,14 @@ export function AnalyticsTabContent() {
         />
       </div>
 
+      {/* Portfolio Value Chart */}
+      <PortfolioValueChart trades={filteredTrades} />
+
+      {/* Asset Allocation - Horizontal Bar Chart */}
+      <AssetAllocationBarChart data={allocationData} />
+
       {/* Equity Curve Chart */}
-      <EquityCurveChart />
+      <EquityCurveChart trades={filteredTrades} />
 
       {/* Strategy Performance Table */}
       <StrategyPerformanceTable />

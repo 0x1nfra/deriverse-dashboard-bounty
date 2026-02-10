@@ -41,24 +41,12 @@ export function VolumeFeesTabContent() {
     if (isDefault) {
       return (
         <div className="space-y-6">
-          <div className="mb-2">
-            <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Track your trading volume and fee impact
-            </p>
-          </div>
           <NoTradesState />
         </div>
       )
     }
     return (
       <div className="space-y-6">
-        <div className="mb-2">
-          <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Track your trading volume and fee impact
-          </p>
-        </div>
         <NoFilterResultsState onClearFilters={resetFilters} />
       </div>
     )
@@ -79,14 +67,6 @@ export function VolumeFeesTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-xl font-semibold text-foreground">Volume & Fees Analysis</h2>
-        <p className="text-muted-foreground text-sm mt-1" suppressHydrationWarning>
-          Track your trading volume and fee impact • {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
-        </p>
-      </div>
-
       {/* Volume Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <VolumeCard
@@ -143,12 +123,6 @@ export function VolumeFeesTabContent() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#5471f6" />
-                      <stop offset="100%" stopColor="#06B6D4" />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
                   <XAxis
                     dataKey="date"
@@ -172,11 +146,11 @@ export function VolumeFeesTabContent() {
                     itemStyle={{ color: "#FFFFFF" }}
                     formatter={(value: number) => [formatCurrency(value), "Volume"]}
                   />
-                  <Bar 
-                    dataKey="volume" 
-                    fill="url(#volumeGradient)" 
+                  <Bar
+                    dataKey="volume"
+                    fill="#0EA5E9"
                     radius={[4, 4, 0, 0]}
-                    activeBar={{ fill: "#5471f6", fillOpacity: 0.8 }}
+                    activeBar={{ fill: "#0EA5E9", fillOpacity: 0.7 }}
                   />
                 </BarChart>
               </ResponsiveContainer>

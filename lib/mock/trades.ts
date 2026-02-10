@@ -46,7 +46,7 @@ const MARKET_PHASES = [
   { days: 18, winRate: 0.55, volatility: 0.10, name: "recovery_1", tradesPerDay: [5, 10] },   // Recovery (was 65%)
   { days: 15, winRate: 0.30, volatility: 0.15, name: "bear_market", tradesPerDay: [8, 15] }, // Major drawdown
   { days: 20, winRate: 0.52, volatility: 0.09, name: "recovery_2", tradesPerDay: [4, 9] },    // Final recovery (was 60%)
-  { days: 10, winRate: 0.45, volatility: 0.11, name: "chop", tradesPerDay: [3, 7] },         // Choppy ending
+  { days: 10, winRate: 0.45, volatility: 0.11, name: "chop", tradesPerDay: [6, 12] },        // Active recent trading
 ]
 
 // Generate random number in range
@@ -132,8 +132,8 @@ function generateTradeWithBias(
   const grossPnL = notionalValue * (pnlPercentage / 100)
   const netPnL = grossPnL - totalFees
   
-  // Update account balance with this trade's PnL
-  accountBalance += netPnL
+  // Update account balance with this trade's PnL (floor at 20% of starting capital)
+  accountBalance = Math.max(accountBalance + netPnL, 10000)
   
   // Calculate percentages from respective PnL values
   const grossPnlPercentage = pnlPercentage
@@ -369,25 +369,32 @@ export function getFeeMetrics(trades: Trade[]): FeeMetrics {
 // Get daily volume data for chart
 export function getDailyVolumeData(trades: Trade[], days: number) {
   const data: { date: string; volume: number }[] = []
-  const now = new Date()
-  
+
+  if (trades.length === 0) return data
+
+  // Determine the date range from the actual trades instead of from "now"
+  // This ensures bars always align with the data we have
+  const sorted = [...trades].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  const latestTradeDate = new Date(sorted[sorted.length - 1].timestamp)
+  latestTradeDate.setHours(23, 59, 59, 999)
+
   for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(now)
+    const date = new Date(latestTradeDate)
     date.setDate(date.getDate() - i)
     date.setHours(0, 0, 0, 0)
-    
+
     const nextDate = new Date(date)
     nextDate.setDate(nextDate.getDate() + 1)
-    
+
     const dayVolume = trades
       .filter(t => t.timestamp >= date && t.timestamp < nextDate)
       .reduce((sum, t) => sum + t.size * t.entryPrice, 0)
-    
+
     data.push({
       date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       volume: Math.round(dayVolume * 100) / 100,
     })
   }
-  
+
   return data
 }
