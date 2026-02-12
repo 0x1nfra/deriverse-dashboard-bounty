@@ -7,7 +7,7 @@ import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 
 export function TradingTabContent() {
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades()
   const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
 

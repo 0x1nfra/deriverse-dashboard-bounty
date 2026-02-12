@@ -50,7 +50,7 @@ function generateChartData(periodHours: number | null) {
     periodHours === 24
       ? 24
       : periodHours === 168
-        ? 168
+        ? 28
         : periodHours === 720
           ? 30
           : periodHours === 8760
@@ -65,7 +65,7 @@ function generateChartData(periodHours: number | null) {
       periodHours === 24
         ? i * 60 * 60 * 1000
         : periodHours === 168
-          ? i * 60 * 60 * 1000
+          ? i * 6 * 60 * 60 * 1000
           : periodHours === 720
             ? i * 24 * 60 * 60 * 1000
             : periodHours === 8760
@@ -91,7 +91,7 @@ function generateChartData(periodHours: number | null) {
           : periodHours === 168
             ? date.toLocaleDateString([], {
                 weekday: "short",
-                hour: "2-digit",
+                day: "numeric",
               })
             : date.toLocaleDateString([], { month: "short", day: "numeric" }),
       timestamp: date.getTime(),
@@ -101,7 +101,7 @@ function generateChartData(periodHours: number | null) {
     });
   }
 
-  return data.reverse();
+  return data;
 }
 
 interface ChartTooltipProps {
@@ -223,7 +223,7 @@ export function PersistentSummaryCard() {
         value={`${metrics.pnl.isPositive ? "+" : ""}$${metrics.pnl.value.toLocaleString(
           undefined,
           { minimumFractionDigits: 2 }
-        )} (${metrics.pnl.isPositive ? "+" : ""}${metrics.pnl.percent}%)`}
+        )}`}
         isPositive={metrics.pnl.isPositive}
       />
       <MetricRow
@@ -280,7 +280,7 @@ export function PersistentSummaryCard() {
               key={period.label}
               onClick={() => setSelectedPeriod(period.label)}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 cursor-pointer",
                 selectedPeriod === period.label
                   ? "bg-card text-foreground shadow-sm border border-border"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -381,7 +381,7 @@ export function PersistentSummaryCard() {
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Portfolio Summary</span>
         <button
           onClick={() => setCardCollapsed(!cardCollapsed)}
-          className="w-7 h-7 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground transition-colors cursor-pointer"
         >
           {cardCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
         </button>
@@ -389,38 +389,30 @@ export function PersistentSummaryCard() {
 
       {/* Card content - collapsible on mobile */}
       <div className={cn(cardCollapsed && "hidden lg:block")}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-0">
           {/* Left Side - Metrics Panel */}
           <div className="p-3 lg:border-r border-border">
             {/* Primary Metric - Account Value */}
             <div className="mb-1">
               <span className="text-xs text-muted-foreground">Account Value</span>
-              <div className="text-[24px] font-bold font-mono text-foreground leading-tight mt-1">
-                $
-                {accountMetrics.accountValue.value.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </div>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[24px] font-bold font-mono text-foreground leading-tight">
+                  $
+                  {accountMetrics.accountValue.value.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
                 <span
                   className={cn(
-                    "text-sm font-mono font-medium",
+                    "text-xs font-medium font-mono px-1.5 py-0.5 rounded",
                     accountMetrics.accountValue.isPositive
-                      ? "text-emerald-500"
-                      : "text-rose-500"
+                      ? "text-emerald-500 bg-emerald-500/10"
+                      : "text-rose-500 bg-rose-500/10"
                   )}
                 >
-                  <span className="text-xs">
-                    {accountMetrics.accountValue.isPositive ? "↗" : "↘"}
-                  </span>
                   {accountMetrics.accountValue.isPositive ? "+" : ""}
-                  ${accountMetrics.accountValue.change.toLocaleString(
-                    undefined,
-                    { minimumFractionDigits: 2 }
-                  )}
-                  ({accountMetrics.accountValue.isPositive ? "+" : ""}
-                  {accountMetrics.accountValue.changePercent}%)
+                  {accountMetrics.accountValue.changePercent}%
                 </span>
               </div>
             </div>
@@ -439,7 +431,7 @@ export function PersistentSummaryCard() {
                 {showAllMetrics && extraMetrics}
                 <button
                   onClick={() => setShowAllMetrics(!showAllMetrics)}
-                  className="w-full mt-2 py-1.5 text-[11px] font-medium text-primary/80 hover:text-primary bg-primary/[0.05] hover:bg-primary/[0.1] border border-primary/20 rounded-md transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full mt-2 py-1.5 text-[11px] font-medium text-primary/80 hover:text-primary bg-primary/[0.05] hover:bg-primary/[0.1] border border-primary/20 rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {showAllMetrics ? "Show Less" : "Show More"}
                   <ChevronDown className={cn("h-3 w-3 transition-transform", showAllMetrics && "rotate-180")} />
@@ -460,7 +452,7 @@ export function PersistentSummaryCard() {
               <>
                 <button
                   onClick={() => setShowChart(false)}
-                  className="w-full px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <BarChart3 className="h-3 w-3" />
                   Hide Chart
@@ -471,7 +463,7 @@ export function PersistentSummaryCard() {
             ) : (
               <button
                 onClick={() => setShowChart(true)}
-                className="w-full px-3 py-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full px-3 py-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <BarChart3 className="h-3 w-3" />
                 Show Chart

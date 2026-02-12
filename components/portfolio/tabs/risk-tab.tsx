@@ -16,7 +16,7 @@ import {
 } from "@/lib/analytics/risk"
 
 export function RiskTabContent() {
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades(false)
   const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
 

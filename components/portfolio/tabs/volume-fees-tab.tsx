@@ -24,7 +24,7 @@ export function VolumeFeesTabContent() {
   const days = timePeriods.find(p => p.id === selectedPeriod)?.days || 7
 
   // Use filtered trades from global filters
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades(false)
   const { resetFilters, isDefault } = useFilters()
 
   useEffect(() => {

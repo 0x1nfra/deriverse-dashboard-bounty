@@ -79,7 +79,7 @@ function calculateMetrics(trades: ReturnType<typeof useFilteredTrades>['filtered
 
 export function AnalyticsTabContent() {
   const [isClient, setIsClient] = useState(false)
-  const { filteredTrades, dateRangeLabel } = useFilteredTrades()
+  const { filteredTrades } = useFilteredTrades(false)
 
   useEffect(() => {
     setIsClient(true)

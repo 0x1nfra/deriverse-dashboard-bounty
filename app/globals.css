@@ -17,7 +17,7 @@
   
   /* Interactive elements */
   --primary: #5471f6;
-  --primary-foreground: #000000;
+  --primary-foreground: #FFFFFF;
   --secondary: #1E2536;
   --secondary-foreground: #A0AEC0;
   
@@ -27,7 +27,7 @@
   
   /* Accent colors */
   --accent: #5471f6;
-  --accent-foreground: #000000;
+  --accent-foreground: #FFFFFF;
   
   /* Semantic colors */
   --destructive: #EF4444;
@@ -78,13 +78,13 @@
   --popover: #151B2B;
   --popover-foreground: #FFFFFF;
   --primary: #5471f6;
-  --primary-foreground: #000000;
+  --primary-foreground: #FFFFFF;
   --secondary: #1E2536;
   --secondary-foreground: #A0AEC0;
   --muted: #1E2536;
   --muted-foreground: #64748B;
   --accent: #5471f6;
-  --accent-foreground: #000000;
+  --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --success: #10B981;

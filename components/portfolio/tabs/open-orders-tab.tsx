@@ -63,7 +63,7 @@ function getDistanceColor(percent: number, type: string): string {
 }
 
 export function OpenOrdersTabContent() {
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades()
   const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
   const [orders, setOrders] = useState<OpenOrder[]>(defaultOpenOrders)

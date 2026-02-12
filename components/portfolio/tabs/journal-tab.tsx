@@ -3,35 +3,33 @@
 import { useState, useEffect } from "react"
 import { JournalTable } from "@/components/journal/journal-table"
 import { JournalEntryModal } from "@/components/journal/journal-entry-modal"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 
-export function JournalTabContent() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+interface JournalTabContentProps {
+  isModalOpen: boolean
+  onNewEntry: () => void
+  onCloseModal: () => void
+}
+
+export function JournalTabContent({ isModalOpen, onNewEntry, onCloseModal }: JournalTabContentProps) {
   const [editingEntry, setEditingEntry] = useState<string | null>(null)
   const [isClient, setIsClient] = useState(false)
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades(false)
   const { resetFilters, isDefault } = useFilters()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  const handleNewEntry = () => {
-    setEditingEntry(null)
-    setIsModalOpen(true)
-  }
-
   const handleEditEntry = (id: string) => {
     setEditingEntry(id)
-    setIsModalOpen(true)
+    onNewEntry()
   }
 
   const handleCloseModal = () => {
-    setIsModalOpen(false)
+    onCloseModal()
     setEditingEntry(null)
   }
 
@@ -40,24 +38,12 @@ export function JournalTabContent() {
     if (isDefault) {
       return (
         <div className="space-y-6">
-          <div className="flex items-center justify-end">
-            <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              New Entry
-            </Button>
-          </div>
           <NoTradesState />
         </div>
       )
     }
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-end">
-          <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            New Entry
-          </Button>
-        </div>
         <NoFilterResultsState onClearFilters={resetFilters} />
       </div>
     )
@@ -65,19 +51,12 @@ export function JournalTabContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <Button onClick={handleNewEntry} className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          New Entry
-        </Button>
-      </div>
-
       {/* Journal Table */}
       <JournalTable onEditEntry={handleEditEntry} />
 
       {/* Entry Modal */}
-      <JournalEntryModal 
-        isOpen={isModalOpen} 
+      <JournalEntryModal
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
         editingEntryId={editingEntry}
       />
