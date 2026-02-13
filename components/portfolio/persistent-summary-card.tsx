@@ -46,31 +46,33 @@ function formatCurrency(value: number): string {
 function generateChartData(periodHours: number | null) {
   const baseValue = 45230.89;
   const data = [];
+  // Number of data points per period — chosen so each point maps to a unique label
   const points =
     periodHours === 24
-      ? 24
+      ? 48        // 30-min intervals
       : periodHours === 168
-        ? 28
+        ? 7       // 1 per day
         : periodHours === 720
-          ? 30
+          ? 30    // 1 per day
           : periodHours === 8760
-            ? 52
-            : 365;
+            ? 52  // 1 per week
+            : 365; // 1 per day
   const now = new Date();
 
   // Generate realistic looking portfolio value data
   let currentValue = baseValue;
   for (let i = points; i >= 0; i--) {
+    // Time step per point — matches point count to cover the full period
     const timeOffset =
       periodHours === 24
-        ? i * 60 * 60 * 1000
+        ? i * 30 * 60 * 1000               // 30 min
         : periodHours === 168
-          ? i * 6 * 60 * 60 * 1000
+          ? i * 24 * 60 * 60 * 1000        // 1 day
           : periodHours === 720
-            ? i * 24 * 60 * 60 * 1000
+            ? i * 24 * 60 * 60 * 1000      // 1 day
             : periodHours === 8760
-              ? i * 7 * 24 * 60 * 60 * 1000
-              : i * 24 * 60 * 60 * 1000;
+              ? i * 7 * 24 * 60 * 60 * 1000  // 1 week
+              : i * 24 * 60 * 60 * 1000;     // 1 day
 
     const date = new Date(now.getTime() - timeOffset);
 
@@ -340,8 +342,7 @@ export function PersistentSummaryCard() {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                interval={Math.max(Math.floor(chartData.length / 8) - 1, 0)}
               />
 
               <YAxis
