@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, Plus } from "lucide-react";
@@ -18,6 +18,8 @@ import { OpenOrdersTabContent } from "@/components/portfolio/tabs/open-orders-ta
 // Filter components
 import { FilterProvider } from "@/components/providers/filter-provider";
 import { GlobalFilterBar } from "@/components/filters/global-filter-bar";
+import { JournalFilters, type JournalFilterValues } from "@/components/journal/journal-filters";
+import { mockJournalEntries } from "@/lib/mock/journal-data";
 
 // Sub-tabs configuration
 const subTabs = [
@@ -35,6 +37,18 @@ const filterableTabs = ["positions", "open-orders", "history"];
 export default function PortfolioDashboard() {
   const [activeTab, setActiveTab] = useState("positions");
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [journalFilters, setJournalFilters] = useState<JournalFilterValues>({
+    dateRange: "all",
+    tag: "all",
+  });
+
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    mockJournalEntries.forEach((entry) => {
+      entry.tags.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, []);
 
   const handleNewJournalEntry = () => {
     setIsJournalModalOpen(true);
@@ -60,6 +74,7 @@ export default function PortfolioDashboard() {
             isModalOpen={isJournalModalOpen}
             onNewEntry={handleNewJournalEntry}
             onCloseModal={handleCloseJournalModal}
+            journalFilters={journalFilters}
           />
         );
       case "volume-fees":
@@ -129,23 +144,30 @@ export default function PortfolioDashboard() {
               ))}
             </nav>
 
-            {/* Right side - filters or journal button */}
+            {/* Right side - filters or journal controls */}
             <div className="hidden sm:flex items-center gap-2 flex-shrink-0 py-1.5">
               {filterableTabs.includes(activeTab) && <GlobalFilterBar />}
               {activeTab === "journal" && (
-                <Button
-                  size="sm"
-                  onClick={handleNewJournalEntry}
-                  className="gap-1.5 bg-primary hover:bg-primary/90"
-                >
-                  <Plus className="h-4 w-4" />
-                  New Entry
-                </Button>
+                <>
+                  <Button
+                    size="icon"
+                    onClick={handleNewJournalEntry}
+                    className="h-8 w-8 bg-primary hover:bg-primary/90"
+                    aria-label="New journal entry"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <JournalFilters
+                    filters={journalFilters}
+                    onFilterChange={setJournalFilters}
+                    availableTags={availableTags}
+                  />
+                </>
               )}
             </div>
           </div>
 
-          {/* Mobile: filters/journal button below tabs */}
+          {/* Mobile: filters/journal controls below tabs */}
           <div className="sm:hidden pb-2 px-1">
             {filterableTabs.includes(activeTab) && (
               <div className="pt-2">
@@ -153,15 +175,20 @@ export default function PortfolioDashboard() {
               </div>
             )}
             {activeTab === "journal" && (
-              <div className="pt-2">
+              <div className="flex items-center gap-2 pt-2">
                 <Button
-                  size="sm"
+                  size="icon"
                   onClick={handleNewJournalEntry}
-                  className="gap-1.5 bg-primary hover:bg-primary/90"
+                  className="h-8 w-8 bg-primary hover:bg-primary/90 flex-shrink-0"
+                  aria-label="New journal entry"
                 >
                   <Plus className="h-4 w-4" />
-                  New Entry
                 </Button>
+                <JournalFilters
+                  filters={journalFilters}
+                  onFilterChange={setJournalFilters}
+                  availableTags={availableTags}
+                />
               </div>
             )}
           </div>

@@ -7,16 +7,57 @@ import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp, ChevronRight, Calendar, Clock, TrendingUp, TrendingDown, Edit3, Image as ImageIcon } from "lucide-react"
 import { mockJournalEntries, JournalEntry, formatDuration } from "@/lib/mock/journal-data"
 import { formatCurrency } from "@/lib/mock/trades"
+import type { DateRange } from "@/components/journal/journal-filters"
 
 interface JournalTableProps {
   onEditEntry: (id: string) => void
+  dateRange?: DateRange
+  tag?: string
 }
 
-export function JournalTable({ onEditEntry }: JournalTableProps) {
+function getDateRangeCutoff(dateRange: DateRange): Date | null {
+  if (dateRange === "all") return null
+  const now = new Date()
+  switch (dateRange) {
+    case "today":
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    case "week": {
+      const d = new Date(now)
+      d.setDate(d.getDate() - 7)
+      return d
+    }
+    case "month": {
+      const d = new Date(now)
+      d.setMonth(d.getMonth() - 1)
+      return d
+    }
+    case "year": {
+      const d = new Date(now)
+      d.setFullYear(d.getFullYear() - 1)
+      return d
+    }
+    default:
+      return null
+  }
+}
+
+export function JournalTable({ onEditEntry, dateRange = "all", tag = "all" }: JournalTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
+  // Filter entries
+  const filteredEntries = mockJournalEntries.filter((entry) => {
+    // Date range filter
+    const cutoff = getDateRangeCutoff(dateRange)
+    if (cutoff && entry.timestamp < cutoff) return false
+
+    // Tag filter
+    if (tag !== "all" && !entry.tags.includes(tag)) return false
+
+    return true
+  })
+
   // Sort entries by timestamp (newest first)
-  const sortedEntries = [...mockJournalEntries].sort(
+  const sortedEntries = [...filteredEntries].sort(
     (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
   )
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { JournalTable } from "@/components/journal/journal-table"
 import { JournalEntryModal } from "@/components/journal/journal-entry-modal"
+import { type JournalFilterValues } from "@/components/journal/journal-filters"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
@@ -11,9 +12,10 @@ interface JournalTabContentProps {
   isModalOpen: boolean
   onNewEntry: () => void
   onCloseModal: () => void
+  journalFilters: JournalFilterValues
 }
 
-export function JournalTabContent({ isModalOpen, onNewEntry, onCloseModal }: JournalTabContentProps) {
+export function JournalTabContent({ isModalOpen, onNewEntry, onCloseModal, journalFilters }: JournalTabContentProps) {
   const [editingEntry, setEditingEntry] = useState<string | null>(null)
   const [isClient, setIsClient] = useState(false)
   const { filteredTrades, isLoading } = useFilteredTrades(false)
@@ -50,9 +52,13 @@ export function JournalTabContent({ isModalOpen, onNewEntry, onCloseModal }: Jou
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Journal Table */}
-      <JournalTable onEditEntry={handleEditEntry} />
+      <JournalTable
+        onEditEntry={handleEditEntry}
+        dateRange={journalFilters.dateRange}
+        tag={journalFilters.tag}
+      />
 
       {/* Entry Modal */}
       <JournalEntryModal
