@@ -74,7 +74,7 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px]">
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
@@ -113,7 +113,7 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 

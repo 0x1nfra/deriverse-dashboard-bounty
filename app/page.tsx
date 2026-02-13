@@ -9,7 +9,7 @@ import { Download, Upload, Plus } from "lucide-react";
 import { TradingTabContent } from "@/components/portfolio/tabs/trading-tab";
 import { AnalyticsTabContent } from "@/components/portfolio/tabs/analytics-tab";
 import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab";
-import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab";
+
 import { RiskTabContent } from "@/components/portfolio/tabs/risk-tab";
 import { PersistentSummaryCard } from "@/components/portfolio/persistent-summary-card";
 import { OpenPositionsTable } from "@/components/dashboard/open-positions-table";
@@ -28,7 +28,7 @@ const subTabs = [
   { id: "history", label: "History" },
   { id: "journal", label: "Journal" },
   { id: "analytics", label: "Analytics" },
-  { id: "volume-fees", label: "Volume & Fees" },
+
   { id: "risk", label: "Risk" },
 ];
 
@@ -77,8 +77,6 @@ export default function PortfolioDashboard() {
             journalFilters={journalFilters}
           />
         );
-      case "volume-fees":
-        return <VolumeFeesTabContent />;
       case "risk":
         return <RiskTabContent />;
       default:
