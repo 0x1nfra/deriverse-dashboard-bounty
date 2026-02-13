@@ -272,7 +272,7 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
               <SortableHeader label="Position Value" sortKey="positionValue" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Entry" sortKey="entryPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Mark Price" sortKey="currentPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-              <SortableHeader label="PNL (ROE %)" sortKey="pnlUsd" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
+              <SortableHeader label="PNL" sortKey="pnlUsd" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
               <SortableHeader label="Liq Price" sortKey="liqPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Margin" sortKey="margin" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Funding" sortKey="funding" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />

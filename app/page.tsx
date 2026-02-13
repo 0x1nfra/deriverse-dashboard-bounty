@@ -33,7 +33,7 @@ const subTabs = [
 const filterableTabs = ["positions", "open-orders", "history"];
 
 export default function PortfolioDashboard() {
-  const [activeTab, setActiveTab] = useState("history");
+  const [activeTab, setActiveTab] = useState("positions");
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
 
   const handleNewJournalEntry = () => {
