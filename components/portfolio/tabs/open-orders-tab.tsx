@@ -1,86 +1,174 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
+import { X, ChevronUp, ChevronDown } from "lucide-react"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 
 interface OpenOrder {
   pair: string
-  side: "long" | "short"
   type: string
-  triggerPrice: number
+  side: "long" | "short"
   size: string
+  price: number
   currentPrice: number
-  status: string
+  reduceOnly: boolean
+  triggerCondition: string | null
+  tp: number | null
+  sl: number | null
   time: string
 }
 
 const defaultOpenOrders: OpenOrder[] = [
   {
     pair: "BTC/USD",
+    type: "Limit",
     side: "long",
-    type: "Limit Buy",
-    triggerPrice: 42000,
     size: "0.2",
+    price: 42000,
     currentPrice: 49200,
-    status: "Pending",
+    reduceOnly: false,
+    triggerCondition: null,
+    tp: 55000,
+    sl: 39000,
     time: "2m ago",
   },
   {
     pair: "ETH/USD",
+    type: "Stop Market",
     side: "short",
-    type: "Stop Loss",
-    triggerPrice: 2200,
     size: "3.0",
+    price: 2200,
     currentPrice: 3190,
-    status: "Active",
+    reduceOnly: true,
+    triggerCondition: "Mark ≤ $2,200",
+    tp: null,
+    sl: null,
     time: "15m ago",
   },
   {
     pair: "SOL/USD",
-    side: "long",
     type: "Take Profit",
-    triggerPrice: 120.00,
+    side: "long",
     size: "25",
+    price: 120.00,
     currentPrice: 162.80,
-    status: "Active",
+    reduceOnly: true,
+    triggerCondition: "Mark ≥ $120.00",
+    tp: 180,
+    sl: 95,
     time: "1h ago",
   },
 ]
 
-function calculateDistance(triggerPrice: number, currentPrice: number): { percent: number; label: string } {
-  const percent = ((triggerPrice - currentPrice) / currentPrice) * 100
-  const isBelow = percent < 0
+type SortKey = "pair" | "type" | "side" | "size" | "orderValue" | "price" | "currentPrice" | "reduceOnly" | "triggerCondition" | "tp" | "time"
+type SortDir = "asc" | "desc"
 
-  return {
-    percent: Math.abs(percent),
-    label: isBelow ? `${percent.toFixed(1)}%` : `+${percent.toFixed(1)}%`
+function getSortValue(order: OpenOrder, key: SortKey): number | string {
+  switch (key) {
+    case "pair": return order.pair
+    case "type": return order.type
+    case "side": return order.side
+    case "size": return parseFloat(order.size)
+    case "orderValue": return parseFloat(order.size) * order.price
+    case "price": return order.price
+    case "currentPrice": return order.currentPrice
+    case "reduceOnly": return order.reduceOnly ? 1 : 0
+    case "triggerCondition": return order.triggerCondition ?? ""
+    case "tp": return order.tp ?? 0
+    case "time": return order.time
   }
 }
 
-function getDistanceColor(percent: number): string {
-  if (percent < 2) return "text-rose-500"
-  if (percent < 5) return "text-amber-500"
-  return "text-emerald-500"
+interface SortableHeaderProps {
+  label: string
+  sortKey: SortKey
+  activeKey: SortKey | null
+  direction: SortDir
+  onSort: (key: SortKey) => void
+  align?: "left" | "right"
+  className?: string
+}
+
+function SortableHeader({ label, sortKey, activeKey, direction, onSort, align = "left", className }: SortableHeaderProps) {
+  const isActive = activeKey === sortKey
+
+  return (
+    <th
+      className={cn(
+        "px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none group/th",
+        align === "right" ? "text-right" : "text-left",
+        className
+      )}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className={cn(
+        "inline-flex items-center gap-1",
+        align === "right" && "flex-row-reverse"
+      )}>
+        {label}
+        <span className={cn(
+          "inline-flex flex-col -space-y-1",
+          isActive ? "opacity-100" : "opacity-0 group-hover/th:opacity-40 transition-opacity"
+        )}>
+          {isActive ? (
+            direction === "asc"
+              ? <ChevronUp className="h-3.5 w-3.5" />
+              : <ChevronDown className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5" />
+          )}
+        </span>
+      </span>
+    </th>
+  )
 }
 
 export function OpenOrdersTabContent() {
   const { filteredTrades, isLoading } = useFilteredTrades()
-  const { resetFilters, isDefault } = useFilters()
+  const { resetFilters, isDefault, filters } = useFilters()
   const [isClient, setIsClient] = useState(false)
   const [orders, setOrders] = useState<OpenOrder[]>(defaultOpenOrders)
+  const [sortKey, setSortKey] = useState<SortKey | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>("asc")
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(prev => prev === "asc" ? "desc" : "asc")
+    } else {
+      setSortKey(key)
+      setSortDir("asc")
+    }
+  }
+
+  const visibleOrders = useMemo(() => {
+    if (filters.tradeType === "long") return orders.filter(o => o.side === "long")
+    if (filters.tradeType === "short") return orders.filter(o => o.side === "short")
+    return orders
+  }, [orders, filters.tradeType])
+
+  const sortedOrders = useMemo(() => {
+    if (!sortKey) return visibleOrders
+    return [...visibleOrders].sort((a, b) => {
+      const aVal = getSortValue(a, sortKey)
+      const bVal = getSortValue(b, sortKey)
+      const cmp = typeof aVal === "string" && typeof bVal === "string"
+        ? aVal.localeCompare(bVal)
+        : (aVal as number) - (bVal as number)
+      return sortDir === "asc" ? cmp : -cmp
+    })
+  }, [visibleOrders, sortKey, sortDir])
+
   const handleCancelOrder = (index: number) => {
-    console.log(`Canceling order at index: ${index}`)
-    setOrders(prev => prev.filter((_, i) => i !== index))
+    const orderToCancel = sortedOrders[index]
+    setOrders(prev => prev.filter(o => o !== orderToCancel))
   }
 
   // Handle empty states
@@ -115,26 +203,28 @@ export function OpenOrdersTabContent() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Pair</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Side</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Size</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Trigger Price</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order Value</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Current</th>
-                <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Distance</th>
-                <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Time</th>
+                <SortableHeader label="Pair" sortKey="pair" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Type" sortKey="type" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Side" sortKey="side" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Size" sortKey="size" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Order Value" sortKey="orderValue" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Price" sortKey="price" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Current Price" sortKey="currentPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Reduce Only" sortKey="reduceOnly" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Trigger Condition" sortKey="triggerCondition" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="TP/SL" sortKey="tp" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                <SortableHeader label="Time" sortKey="time" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" className="whitespace-nowrap" />
                 <th className="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {orders.map((order, idx) => {
-                const distance = calculateDistance(order.triggerPrice, order.currentPrice)
-                const orderValue = parseFloat(order.size) * order.triggerPrice
+              {sortedOrders.map((order, idx) => {
+                const orderValue = parseFloat(order.size) * order.price
 
                 return (
                   <tr key={idx} className="hover:bg-secondary/30 transition-colors">
                     <td className="px-5 py-4 text-sm font-medium text-foreground">{order.pair}</td>
+                    <td className="px-5 py-4 text-sm text-foreground">{order.type}</td>
                     <td className="px-5 py-4">
                       <span className={cn(
                         "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -145,18 +235,27 @@ export function OpenOrdersTabContent() {
                         {order.side.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm text-foreground">{order.type}</td>
                     <td className="px-5 py-4 text-sm font-mono text-foreground">{order.size}</td>
-                    <td className="px-5 py-4 text-sm font-mono text-foreground">${order.triggerPrice.toLocaleString()}</td>
                     <td className="px-5 py-4 text-sm font-mono text-foreground">${orderValue.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-sm font-mono text-foreground">${order.price.toLocaleString()}</td>
                     <td className="px-5 py-4 text-sm font-mono text-foreground">${order.currentPrice.toLocaleString()}</td>
-                    <td className={cn(
-                      "px-5 py-4 text-sm font-mono text-right font-medium",
-                      getDistanceColor(distance.percent)
-                    )}>
-                      {distance.label}
+                    <td className="px-5 py-4 text-sm text-muted-foreground">
+                      {order.reduceOnly ? "Yes" : "—"}
                     </td>
-                    <td className="px-5 py-4 text-sm text-foreground text-right">{order.time}</td>
+                    <td className="px-5 py-4 text-sm text-foreground">
+                      {order.triggerCondition ?? "—"}
+                    </td>
+                    <td className="px-5 py-4 text-sm font-mono">
+                      {order.tp || order.sl ? (
+                        <div className="flex flex-col gap-0.5">
+                          {order.tp && <span className="text-emerald-500">${order.tp.toLocaleString()}</span>}
+                          {order.sl && <span className="text-rose-500">${order.sl.toLocaleString()}</span>}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-foreground text-right whitespace-nowrap">{order.time}</td>
                     <td className="px-5 py-4 text-right">
                       <Button
                         variant="outline"

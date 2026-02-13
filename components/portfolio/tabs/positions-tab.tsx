@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { OpenPositionsTable } from "@/components/dashboard/open-positions-table"
+import { useFilters } from "@/hooks/use-filters"
 
 // Secondary tabs for positions section
 const positionTabs = ["Open Positions", "Closed Positions", "Open Orders"]

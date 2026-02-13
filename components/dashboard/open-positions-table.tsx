@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Trade } from "@/lib/mock/trades"
 import { X, SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
+import { useFilters } from "@/hooks/use-filters"
 import { ClosePositionDialog } from "./close-position-dialog"
 import { AdjustMarginDialog } from "./adjust-margin-dialog"
 
@@ -185,6 +186,7 @@ function SortableHeader({ label, sortKey, activeKey, direction, onSort, align = 
 }
 
 export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
+  const { filters } = useFilters()
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>("asc")
   const [closingPosition, setClosingPosition] = useState<Position | null>(null)
@@ -231,9 +233,15 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
       })
     : defaultOpenPositions
 
+  const filteredPositions = useMemo(() => {
+    if (filters.tradeType === "long") return rawPositions.filter(p => p.side === "long")
+    if (filters.tradeType === "short") return rawPositions.filter(p => p.side === "short")
+    return rawPositions
+  }, [rawPositions, filters.tradeType])
+
   const positions = useMemo(() => {
-    if (!sortKey) return rawPositions
-    return [...rawPositions].sort((a, b) => {
+    if (!sortKey) return filteredPositions
+    return [...filteredPositions].sort((a, b) => {
       const aVal = getSortValue(a, sortKey)
       const bVal = getSortValue(b, sortKey)
       const cmp = typeof aVal === "string" && typeof bVal === "string"
@@ -241,7 +249,7 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
         : (aVal as number) - (bVal as number)
       return sortDir === "asc" ? cmp : -cmp
     })
-  }, [rawPositions, sortKey, sortDir])
+  }, [filteredPositions, sortKey, sortDir])
 
   const handleClosePosition = (position: Position) => {
     setClosingPosition(position)
