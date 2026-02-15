@@ -1,19 +1,32 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ExtremeTradesCard } from "@/components/risk/extreme-trades-card"
-import { WinLossAnalysis } from "@/components/risk/win-loss-analysis"
-import { DirectionalBiasComponent } from "@/components/risk/directional-bias"
-import { DurationAnalysis } from "@/components/risk/duration-analysis"
+import { DrawdownChart } from "@/components/risk/drawdown-chart"
+import { RollingSharpeChart } from "@/components/risk/rolling-sharpe-chart"
+import { RecoveryAnalysis } from "@/components/risk/recovery-analysis"
+import { RiskRewardScatter } from "@/components/risk/risk-reward-scatter"
+import { StreakAnalysis } from "@/components/risk/streak-analysis"
+import { PnlDistribution } from "@/components/risk/pnl-distribution"
+import { SymbolExposure } from "@/components/risk/symbol-exposure"
 import { useFilteredTrades } from "@/hooks/use-filtered-trades"
 import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 import {
   calculateExtremeTrades,
-  calculateWinLossStats,
-  calculateDirectionalBias,
-  calculateDurationStats,
+  calculateStreaks,
+  getPnlDistribution,
+  calculateSymbolExposure,
+  calculateSharpeRatio,
+  calculateSortinoRatio,
 } from "@/lib/analytics/risk"
+import {
+  generatePortfolioData,
+  calculateMaxDrawdown,
+  calculateCurrentDrawdown,
+} from "@/lib/analytics/drawdown"
+import { TrendingDown, Activity, BarChart3, Shield } from "lucide-react"
 
 export function RiskTabContent() {
   const { filteredTrades, isLoading } = useFilteredTrades(false)
@@ -24,28 +37,44 @@ export function RiskTabContent() {
     setIsClient(true)
   }, [])
 
-  // Calculate metrics - must be called before any early returns to maintain hook order
   const extremeTrades = useMemo(
     () => calculateExtremeTrades(filteredTrades),
     [filteredTrades]
   )
 
-  const winLossStats = useMemo(
-    () => calculateWinLossStats(filteredTrades),
+  const streaks = useMemo(
+    () => calculateStreaks(filteredTrades),
     [filteredTrades]
   )
 
-  const directionalBias = useMemo(
-    () => calculateDirectionalBias(filteredTrades),
+  const pnlDistribution = useMemo(
+    () => getPnlDistribution(filteredTrades),
     [filteredTrades]
   )
 
-  const durationStats = useMemo(
-    () => calculateDurationStats(filteredTrades),
+  const symbolExposure = useMemo(
+    () => calculateSymbolExposure(filteredTrades),
     [filteredTrades]
   )
 
-  // Handle empty states - after all hooks are called
+  const sharpeRatio = useMemo(
+    () => calculateSharpeRatio(filteredTrades),
+    [filteredTrades]
+  )
+
+  const sortinoRatio = useMemo(
+    () => calculateSortinoRatio(filteredTrades),
+    [filteredTrades]
+  )
+
+  const drawdownMetrics = useMemo(() => {
+    const portfolioData = generatePortfolioData()
+    return {
+      maxDrawdown: calculateMaxDrawdown(portfolioData),
+      currentDrawdown: calculateCurrentDrawdown(portfolioData),
+    }
+  }, [])
+
   if (!isLoading && isClient && filteredTrades.length === 0) {
     if (isDefault) {
       return (
@@ -63,7 +92,89 @@ export function RiskTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Section 1: Extreme Trades */}
+      {/* Section 1: Risk Summary Cards */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingDown className="h-4 w-4 text-destructive" />
+              Max Drawdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-destructive">
+              {drawdownMetrics.maxDrawdown
+                ? `-${drawdownMetrics.maxDrawdown.percentage.toFixed(2)}%`
+                : "—"}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Activity className="h-4 w-4 text-warning" />
+              Current Drawdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-warning">
+              {drawdownMetrics.currentDrawdown
+                ? `-${drawdownMetrics.currentDrawdown.percentage.toFixed(2)}%`
+                : "0.00%"}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              Sharpe Ratio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-foreground">
+              {sharpeRatio === 0 ? "—" : sharpeRatio.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              Sortino Ratio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-foreground">
+              {sortinoRatio === Infinity
+                ? "∞"
+                : sortinoRatio === 0
+                  ? "—"
+                  : sortinoRatio.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Section 2: Drawdown Chart */}
+      <section>
+        <DrawdownChart />
+      </section>
+
+      {/* Section 3: Rolling Sharpe Chart */}
+      <section>
+        <RollingSharpeChart trades={filteredTrades} />
+      </section>
+
+      {/* Section 4: Recovery Analysis */}
+      <section>
+        <RecoveryAnalysis />
+      </section>
+
+      {/* Section 5: Extreme Trades */}
       <section className="space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
           Extreme Trades
@@ -71,28 +182,27 @@ export function RiskTabContent() {
         <ExtremeTradesCard data={extremeTrades} />
       </section>
 
-      {/* Section 2: Win/Loss Analysis */}
+      {/* Section 6: Streak Analysis */}
       <section className="space-y-3">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Win/Loss Analysis
+          Streak Analysis
         </h3>
-        <WinLossAnalysis data={winLossStats} />
+        <StreakAnalysis data={streaks} />
       </section>
 
-      {/* Section 3: Directional Bias */}
-      <section className="space-y-3">
-        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Directional Bias
-        </h3>
-        <DirectionalBiasComponent data={directionalBias} />
+      {/* Section 7: Risk/Reward Scatter */}
+      <section>
+        <RiskRewardScatter trades={filteredTrades} />
       </section>
 
-      {/* Section 4: Duration Analysis */}
-      <section className="space-y-3">
-        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Trade Duration Analysis
-        </h3>
-        <DurationAnalysis stats={durationStats} trades={filteredTrades} />
+      {/* Section 8: PnL Distribution */}
+      <section>
+        <PnlDistribution data={pnlDistribution} />
+      </section>
+
+      {/* Section 9: Risk Exposure by Symbol */}
+      <section>
+        <SymbolExposure data={symbolExposure} />
       </section>
     </div>
   )
