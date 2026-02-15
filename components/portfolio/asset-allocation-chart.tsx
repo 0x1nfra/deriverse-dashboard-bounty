@@ -14,22 +14,22 @@ interface AssetAllocationChartProps {
 }
 
 const defaultChartConfig = {
-  sol: { label: "SOL", color: "#6366F1" },
-  btc: { label: "BTC", color: "#8B5CF6" },
-  eth: { label: "ETH", color: "#3B82F6" },
-  usdc: { label: "USDC", color: "#64748B" },
+  sol: { label: "SOL", color: "#5471f6" },
+  btc: { label: "BTC", color: "#38bdf8" },
+  eth: { label: "ETH", color: "#06b6d4" },
+  usdc: { label: "USDC", color: "#94a3b8" },
 }
 
-// Color palette for allocation items — cool-toned for visual harmony
+// Color palette for allocation items — matches chart variable palette
 const colorPalette = [
-  "#6366F1", // Indigo
-  "#8B5CF6", // Violet
-  "#3B82F6", // Blue
-  "#06B6D4", // Cyan
-  "#14B8A6", // Teal
-  "#64748B", // Slate
-  "#A78BFA", // Light violet
-  "#38BDF8", // Sky
+  "#5471f6", // Primary blue
+  "#38bdf8", // Sky blue
+  "#06b6d4", // Cyan
+  "#818cf8", // Indigo
+  "#a78bfa", // Lavender
+  "#f472b6", // Pink
+  "#94a3b8", // Cool gray
+  "#5eead4", // Teal (overflow)
 ]
 
 export function AssetAllocationChart({ data }: AssetAllocationChartProps) {

@@ -137,7 +137,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
           <span
             className={cn(
               "text-sm font-mono font-medium",
-              isPositive ? "text-emerald-500" : "text-rose-500"
+              isPositive ? "text-success" : "text-destructive"
             )}
           >
             {isPositive ? "+" : ""}
@@ -167,8 +167,8 @@ function MetricRow({ label, value, isPositive, isNegative }: MetricRowProps) {
       <span
         className={cn(
           "text-sm font-mono font-medium",
-          isPositive && "text-emerald-500",
-          isNegative && "text-rose-500",
+          isPositive && "text-success",
+          isNegative && "text-destructive",
           !isPositive && !isNegative && "text-foreground"
         )}
       >
@@ -408,8 +408,8 @@ export function PersistentSummaryCard() {
                   className={cn(
                     "text-xs font-medium font-mono px-1.5 py-0.5 rounded",
                     accountMetrics.accountValue.isPositive
-                      ? "text-emerald-500 bg-emerald-500/10"
-                      : "text-rose-500 bg-rose-500/10"
+                      ? "text-success bg-success/10"
+                      : "text-destructive bg-destructive/10"
                   )}
                 >
                   {accountMetrics.accountValue.isPositive ? "+" : ""}

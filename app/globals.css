@@ -3,60 +3,60 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Deriverse Dark Theme - Per Design System v2.0 */
+/* Signal Dark Theme — compact, data-dense, cyan accent */
 .dark {
   /* Core backgrounds */
-  --background: #0B0F19;
+  --background: #0f1117;
   --foreground: #FFFFFF;
-  
+
   /* Elevated surfaces */
-  --card: #151B2B;
+  --card: #161a25;
   --card-foreground: #FFFFFF;
-  --popover: #151B2B;
+  --popover: #161a25;
   --popover-foreground: #FFFFFF;
-  
+
   /* Interactive elements */
   --primary: #5471f6;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E2536;
-  --secondary-foreground: #A0AEC0;
-  
+  --secondary: #1e2433;
+  --secondary-foreground: #94a3b8;
+
   /* Muted/disabled states */
-  --muted: #1E2536;
+  --muted: #1e2433;
   --muted-foreground: #64748B;
-  
+
   /* Accent colors */
   --accent: #5471f6;
   --accent-foreground: #FFFFFF;
-  
+
   /* Semantic colors */
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --success: #10B981;
   --warning: #F59E0B;
-  
+
   /* Borders and inputs */
-  --border: #2D3748;
-  --input: #1E2536;
+  --border: #1e2433;
+  --input: #1e2433;
   --ring: #5471f6;
-  
-  /* Chart colors - Deriverse palette */
-  --chart-1: #5471f6;
-  --chart-2: #10B981;
-  --chart-3: #3B82F6;
-  --chart-4: #F59E0B;
-  --chart-5: #EF4444;
-  --chart-6: #06B6D4;  /* Cyan - secondary accent */
-  --chart-7: #8B5CF6;  /* Purple - tertiary accent */
-  
+
+  /* Chart colors — categorical palette anchored on primary blue */
+  --chart-1: #5471f6;  /* Primary blue */
+  --chart-2: #38bdf8;  /* Sky blue */
+  --chart-3: #06b6d4;  /* Cyan */
+  --chart-4: #818cf8;  /* Indigo */
+  --chart-5: #a78bfa;  /* Lavender */
+  --chart-6: #f472b6;  /* Pink */
+  --chart-7: #94a3b8;  /* Cool gray */
+
   /* Accent colors - expanded palette */
-  --accent-secondary: #06B6D4;  /* Cyan */
-  --accent-tertiary: #8B5CF6;   /* Purple */
-  
+  --accent-secondary: #38bdf8;  /* Sky blue */
+  --accent-tertiary: #a78bfa;   /* Lavender */
+
   /* Chart grid transparency */
-  --chart-grid: rgba(45, 55, 72, 0.2);
-  
-  --radius: 0.5rem;
+  --chart-grid: rgba(30, 36, 51, 0.4);
+
+  --radius: 0.375rem;
 
   /* Sidebar colors - Added from diff */
   --sidebar: oklch(0.205 0 0);
@@ -69,19 +69,19 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* Light mode fallback (kept for compatibility) */
+/* Root fallback (kept for compatibility) */
 :root {
-  --background: #0B0F19;
+  --background: #0f1117;
   --foreground: #FFFFFF;
-  --card: #151B2B;
+  --card: #161a25;
   --card-foreground: #FFFFFF;
-  --popover: #151B2B;
+  --popover: #161a25;
   --popover-foreground: #FFFFFF;
   --primary: #5471f6;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E2536;
-  --secondary-foreground: #A0AEC0;
-  --muted: #1E2536;
+  --secondary: #1e2433;
+  --secondary-foreground: #94a3b8;
+  --muted: #1e2433;
   --muted-foreground: #64748B;
   --accent: #5471f6;
   --accent-foreground: #FFFFFF;
@@ -89,15 +89,15 @@
   --destructive-foreground: #FFFFFF;
   --success: #10B981;
   --warning: #F59E0B;
-  --border: #2D3748;
-  --input: #1E2536;
+  --border: #1e2433;
+  --input: #1e2433;
   --ring: #5471f6;
   --chart-1: #5471f6;
-  --chart-2: #10B981;
-  --chart-3: #3B82F6;
-  --chart-4: #F59E0B;
-  --chart-5: #EF4444;
-  --radius: 0.5rem;
+  --chart-2: #38bdf8;
+  --chart-3: #06b6d4;
+  --chart-4: #818cf8;
+  --chart-5: #a78bfa;
+  --radius: 0.375rem;
 
   /* Sidebar colors - Added from diff */
   --sidebar: oklch(0.985 0 0);
@@ -111,7 +111,7 @@
 }
 
 @theme inline {
-  --font-sans: 'Figtree', sans-serif;
+  --font-sans: 'IBM Plex Sans', sans-serif;
   --font-mono: sans-serif;
   
   --color-background: var(--background);

@@ -32,7 +32,7 @@ export function PerformanceByDay({ trades }: PerformanceByDayProps) {
         <ChartContainer config={{}} className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
               <XAxis
                 dataKey="dayShort"
                 axisLine={false}
@@ -47,8 +47,8 @@ export function PerformanceByDay({ trades }: PerformanceByDayProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#151B2B",
-                  border: "1px solid #2D3748",
+                  backgroundColor: "#161a25",
+                  border: "1px solid #1e2433",
                   borderRadius: "6px",
                 }}
                 labelStyle={{ color: "#FFFFFF" }}

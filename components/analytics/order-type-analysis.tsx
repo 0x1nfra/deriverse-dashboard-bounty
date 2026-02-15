@@ -17,8 +17,8 @@ interface OrderTypeAnalysisProps {
 
 const chartConfig = {
   market: { label: "Market", color: "#5471f6" },
-  limit: { label: "Limit", color: "#06B6D4" },
-  stop: { label: "Stop", color: "#8B5CF6" },
+  limit: { label: "Limit", color: "#38bdf8" },
+  stop: { label: "Stop", color: "#a78bfa" },
 }
 
 export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
@@ -77,7 +77,7 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
@@ -92,8 +92,8 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#151B2B",
-                      border: "1px solid #2D3748",
+                      backgroundColor: "#161a25",
+                      border: "1px solid #1e2433",
                       borderRadius: "6px",
                     }}
                     labelStyle={{ color: "#FFFFFF" }}

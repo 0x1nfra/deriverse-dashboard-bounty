@@ -18,7 +18,7 @@ export function TopNavigation() {
   const isActive = pathname === "/" || pathname === "/portfolio";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-card border-b border-border">
       <div className="flex items-center justify-between h-full px-4 sm:px-6 max-w-[1440px] mx-auto">
         {/* Logo */}
         <Link href="/" className="flex items-center">

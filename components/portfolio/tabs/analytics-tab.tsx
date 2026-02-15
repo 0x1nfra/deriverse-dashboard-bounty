@@ -106,14 +106,14 @@ export function AnalyticsTabContent() {
 
   const feeBreakdownData = useMemo(() => [
     { name: "Maker", value: feeMetrics.makerFees, color: "#5471f6" },
-    { name: "Taker", value: feeMetrics.takerFees, color: "#06B6D4" },
-    { name: "Funding", value: feeMetrics.fundingFees, color: "#8B5CF6" },
+    { name: "Taker", value: feeMetrics.takerFees, color: "#38bdf8" },
+    { name: "Funding", value: feeMetrics.fundingFees, color: "#a78bfa" },
   ], [feeMetrics])
 
   const feeChartConfig = {
     maker: { label: "Maker", color: "#5471f6" },
-    taker: { label: "Taker", color: "#06B6D4" },
-    funding: { label: "Funding", color: "#8B5CF6" },
+    taker: { label: "Taker", color: "#38bdf8" },
+    funding: { label: "Funding", color: "#a78bfa" },
   }
 
   return (
@@ -181,7 +181,7 @@ export function AnalyticsTabContent() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 55, 72, 0.2)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
@@ -196,8 +196,8 @@ export function AnalyticsTabContent() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#151B2B",
-                      border: "1px solid #2D3748",
+                      backgroundColor: "#161a25",
+                      border: "1px solid #1e2433",
                       borderRadius: "6px",
                     }}
                     labelStyle={{ color: "#FFFFFF" }}
@@ -206,9 +206,9 @@ export function AnalyticsTabContent() {
                   />
                   <Bar
                     dataKey="volume"
-                    fill="#0EA5E9"
+                    fill="var(--primary)"
                     radius={[4, 4, 0, 0]}
-                    activeBar={{ fill: "#0EA5E9", fillOpacity: 0.7 }}
+                    activeBar={{ fill: "var(--primary)", fillOpacity: 0.7 }}
                   />
                 </BarChart>
               </ResponsiveContainer>
