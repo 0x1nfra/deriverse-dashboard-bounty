@@ -9,7 +9,7 @@ import { useFilters } from "@/hooks/use-filters"
 import { NoTradesState, NoFilterResultsState } from "@/components/empty-states"
 
 export function OverviewTabContent() {
-  const { filteredTrades, dateRangeLabel, isLoading } = useFilteredTrades()
+  const { filteredTrades, isLoading } = useFilteredTrades()
   const { resetFilters, isDefault } = useFilters()
   const [isClient, setIsClient] = useState(false)
 
@@ -56,7 +56,7 @@ export function OverviewTabContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm" suppressHydrationWarning>
-          {dateRangeLabel} • {isClient ? filteredTrades.length : '-'} trades
+          {isClient ? filteredTrades.length : '-'} trades
         </p>
       </div>
 

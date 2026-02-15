@@ -98,8 +98,8 @@ export function getOrderTypeDistribution(trades: Trade[]): OrderTypeDistribution
 
   const colors = {
     market: "#5471f6", // Blue
-    limit: "#06B6D4", // Cyan
-    stop: "#8B5CF6", // Purple
+    limit: "#38bdf8", // Sky blue
+    stop: "#a78bfa", // Lavender
   }
 
   return [

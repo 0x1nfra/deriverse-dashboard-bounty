@@ -47,6 +47,7 @@ function formatCurrency(value: number): string {
 
 interface ChartDataPoint {
   date: string;
+  timestamp: number;
   value: number;
   pnl: number;
   isPositive: boolean;
@@ -129,6 +130,7 @@ export function PortfolioValueChart({ trades }: PortfolioValueChartProps) {
     // Convert to array with PnL values
     return Array.from(dateMap.entries()).map(([dateStr, { pnl }]) => ({
       date: dateStr,
+      timestamp: new Date(dateStr).getTime(),
       value: pnl,
       pnl: pnl - startingCapital,
       isPositive: pnl >= startingCapital,
@@ -209,8 +211,7 @@ export function PortfolioValueChart({ trades }: PortfolioValueChartProps) {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                interval={Math.max(Math.floor(filteredData.length / 8) - 1, 0)}
               />
 
               <YAxis

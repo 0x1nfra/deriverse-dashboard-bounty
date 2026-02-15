@@ -218,66 +218,90 @@ function seededRandom(seed: number): number {
 }
 
 /**
- * Generate 90 days of realistic portfolio data with drawdowns
+ * Market regime definition for portfolio simulation
+ * Each regime has a direction bias and magnitude range
+ */
+interface MarketRegime {
+  days: number
+  bias: number    // positive = uptrend, negative = downtrend
+  magnitude: number // base magnitude of daily moves
+  noise: number   // additional noise multiplier
+}
+
+/**
+ * Generate 365 days of realistic portfolio data with multiple drawdown cycles
  * Creates a time series that looks like real trading performance
  * Uses seeded random for SSR/client consistency
  */
 export function generatePortfolioData(): PortfolioDataPoint[] {
   const data: PortfolioDataPoint[] = []
   const startDate = new Date()
-  startDate.setDate(startDate.getDate() - 90)
+  startDate.setDate(startDate.getDate() - 365)
 
-  // Start with base value
+  // Define market regimes across a full year — creates ~7 recovery periods
+  const regimes: MarketRegime[] = [
+    // Q1: Strong start then first correction
+    { days: 25, bias: 1, magnitude: 0.012, noise: 0.008 },   // Uptrend
+    { days: 12, bias: -1, magnitude: 0.015, noise: 0.006 },   // Drawdown 1 (moderate)
+    { days: 18, bias: 1, magnitude: 0.010, noise: 0.007 },    // Recovery
+
+    // Q2: Volatile period with sharp drawdown
+    { days: 15, bias: 1, magnitude: 0.008, noise: 0.010 },    // Choppy uptrend
+    { days: 8, bias: -1, magnitude: 0.020, noise: 0.005 },    // Drawdown 2 (sharp, short)
+    { days: 10, bias: 1, magnitude: 0.015, noise: 0.006 },    // Fast recovery
+    { days: 20, bias: 1, magnitude: 0.006, noise: 0.009 },    // Slow grind up
+
+    // Q3: Extended drawdown with slow recovery
+    { days: 10, bias: -1, magnitude: 0.008, noise: 0.006 },   // Drawdown 3 (gradual)
+    { days: 12, bias: -1, magnitude: 0.012, noise: 0.004 },   // Drawdown deepens
+    { days: 25, bias: 1, magnitude: 0.008, noise: 0.007 },    // Slow recovery
+    { days: 15, bias: 1, magnitude: 0.010, noise: 0.005 },    // Push to new highs
+
+    // Q3-Q4: Another cycle
+    { days: 6, bias: -1, magnitude: 0.025, noise: 0.008 },    // Drawdown 4 (flash crash)
+    { days: 14, bias: 1, magnitude: 0.012, noise: 0.006 },    // Recovery
+    { days: 20, bias: 1, magnitude: 0.007, noise: 0.008 },    // Steady climb
+
+    // Q4: Year-end volatility
+    { days: 15, bias: -1, magnitude: 0.010, noise: 0.007 },   // Drawdown 5 (moderate)
+    { days: 20, bias: 1, magnitude: 0.009, noise: 0.006 },    // Recovery to highs
+    { days: 10, bias: -1, magnitude: 0.006, noise: 0.005 },   // Drawdown 6 (shallow)
+    { days: 12, bias: 1, magnitude: 0.011, noise: 0.006 },    // Recovery
+
+    // Final: current mild drawdown (unrecovered)
+    { days: 20, bias: 1, magnitude: 0.005, noise: 0.007 },    // Flat/up
+    { days: 10, bias: -1, magnitude: 0.007, noise: 0.004 },   // Drawdown 7 (active)
+  ]
+
   let currentValue = 40000
   let peakValue = currentValue
-  let seed = 12345 // Fixed seed for deterministic generation
+  let seed = 12345
+  let dayIndex = 0
 
-  // Generate 90 days of data
-  for (let i = 0; i < 90; i++) {
-    const date = new Date(startDate)
-    date.setDate(date.getDate() + i)
+  for (const regime of regimes) {
+    for (let d = 0; d < regime.days && dayIndex < 365; d++) {
+      const date = new Date(startDate)
+      date.setDate(date.getDate() + dayIndex)
 
-    // Simulate realistic price movements
-    // Mix of trends: uptrend, downtrend (drawdown), sideways
-    const dayOfPeriod = i
-    let dailyChange: number
+      const baseMove = regime.bias * (regime.magnitude * (0.3 + seededRandom(seed++) * 0.7))
+      const noise = (seededRandom(seed++) - 0.5) * regime.noise
+      const dailyChange = currentValue * (baseMove + noise)
 
-    if (dayOfPeriod < 20) {
-      // Initial uptrend: +0.5% to +2% per day
-      dailyChange = currentValue * (0.005 + seededRandom(seed++) * 0.015)
-    } else if (dayOfPeriod < 35) {
-      // First drawdown: -0.5% to -2% per day
-      dailyChange = -currentValue * (0.005 + seededRandom(seed++) * 0.015)
-    } else if (dayOfPeriod < 50) {
-      // Recovery: +0.3% to +1.5% per day
-      dailyChange = currentValue * (0.003 + seededRandom(seed++) * 0.012)
-    } else if (dayOfPeriod < 65) {
-      // Second drawdown (deeper): -0.8% to -2.5% per day
-      dailyChange = -currentValue * (0.008 + seededRandom(seed++) * 0.017)
-    } else if (dayOfPeriod < 80) {
-      // Recovery to new highs: +0.5% to +2% per day
-      dailyChange = currentValue * (0.005 + seededRandom(seed++) * 0.015)
-    } else {
-      // Current drawdown (shallow): -0.3% to -1% per day
-      dailyChange = -currentValue * (0.003 + seededRandom(seed++) * 0.007)
+      currentValue += dailyChange
+      currentValue = Math.max(currentValue, 10000)
+
+      if (currentValue > peakValue) {
+        peakValue = currentValue
+      }
+
+      data.push({
+        date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        value: Math.round(currentValue * 100) / 100,
+        timestamp: date.getTime(),
+      })
+
+      dayIndex++
     }
-
-    // Add some randomness (noise)
-    dailyChange += currentValue * (seededRandom(seed++) - 0.5) * 0.01
-
-    currentValue += dailyChange
-    currentValue = Math.max(currentValue, 10000) // Floor at $10k
-
-    // Track peak
-    if (currentValue > peakValue) {
-      peakValue = currentValue
-    }
-
-    data.push({
-      date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      value: Math.round(currentValue * 100) / 100,
-      timestamp: date.getTime(),
-    })
   }
 
   return data
@@ -309,4 +333,100 @@ export function calculateRunningDrawdown(data: PortfolioDataPoint[]): number[] {
  */
 export function formatDrawdown(percentage: number): string {
   return `-${percentage.toFixed(2)}%`
+}
+
+export interface RecoveryPeriod {
+  peakDate: string
+  troughDate: string
+  recoveryDate: string | null
+  depth: number
+  drawdownDuration: number
+  recoveryDuration: number | null
+  totalDuration: number | null
+  recovered: boolean
+}
+
+/**
+ * Calculate recovery periods from portfolio data
+ * Tracks how long it takes to recover from each drawdown
+ */
+export function calculateRecoveryPeriods(
+  data: PortfolioDataPoint[]
+): RecoveryPeriod[] {
+  if (data.length < 2) return []
+
+  const periods: RecoveryPeriod[] = []
+  let peakValue = data[0].value
+  let peakDate = data[0].date
+  let peakTimestamp = data[0].timestamp
+  let troughValue = data[0].value
+  let troughDate = data[0].date
+  let troughTimestamp = data[0].timestamp
+  let inDrawdown = false
+
+  for (let i = 1; i < data.length; i++) {
+    const point = data[i]
+
+    if (point.value >= peakValue) {
+      if (inDrawdown && troughValue < peakValue) {
+        const depth =
+          Math.round(
+            ((peakValue - troughValue) / peakValue) * 10000
+          ) / 100
+        const drawdownDays = Math.ceil(
+          (troughTimestamp - peakTimestamp) / (1000 * 60 * 60 * 24)
+        )
+        const recoveryDays = Math.ceil(
+          (point.timestamp - troughTimestamp) / (1000 * 60 * 60 * 24)
+        )
+
+        periods.push({
+          peakDate,
+          troughDate,
+          recoveryDate: point.date,
+          depth,
+          drawdownDuration: Math.max(0, drawdownDays),
+          recoveryDuration: Math.max(0, recoveryDays),
+          totalDuration: Math.max(0, drawdownDays + recoveryDays),
+          recovered: true,
+        })
+      }
+
+      peakValue = point.value
+      peakDate = point.date
+      peakTimestamp = point.timestamp
+      troughValue = point.value
+      troughDate = point.date
+      troughTimestamp = point.timestamp
+      inDrawdown = false
+    } else if (point.value < troughValue) {
+      troughValue = point.value
+      troughDate = point.date
+      troughTimestamp = point.timestamp
+      inDrawdown = true
+    }
+  }
+
+  // Include current unrecovered drawdown
+  if (inDrawdown && troughValue < peakValue) {
+    const depth =
+      Math.round(((peakValue - troughValue) / peakValue) * 10000) / 100
+    const drawdownDays = Math.ceil(
+      (troughTimestamp - peakTimestamp) / (1000 * 60 * 60 * 24)
+    )
+
+    periods.push({
+      peakDate,
+      troughDate,
+      recoveryDate: null,
+      depth,
+      drawdownDuration: Math.max(0, drawdownDays),
+      recoveryDuration: null,
+      totalDuration: null,
+      recovered: false,
+    })
+  }
+
+  // Sort by deepest drawdown first
+  return periods.sort((a, b) => b.depth - a.depth)
 }

@@ -41,7 +41,7 @@ export function AnalyticsMetricCard({
                 cy="16"
                 r="14"
                 fill="none"
-                stroke="#2D3748"
+                stroke="var(--border)"
                 strokeWidth="3"
               />
               <circle
@@ -49,7 +49,7 @@ export function AnalyticsMetricCard({
                 cy="16"
                 r="14"
                 fill="none"
-                stroke="#5471f6"
+                stroke="var(--primary)"
                 strokeWidth="3"
                 strokeDasharray={`${(percentage / 100) * 88} 88`}
               />
