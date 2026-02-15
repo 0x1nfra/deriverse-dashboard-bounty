@@ -80,6 +80,8 @@ export function RiskTabContent() {
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     )
 
+    // Add starting capital offset to ensure positive values for drawdown math
+    const startingCapital = 10000
     let runningPnl = 0
     const portfolioData = sortedTrades.map((trade) => {
       runningPnl += trade.pnl
@@ -88,7 +90,7 @@ export function RiskTabContent() {
           month: "short",
           day: "numeric",
         }),
-        value: runningPnl,
+        value: startingCapital + runningPnl,
         timestamp: trade.timestamp.getTime(),
       }
     })
@@ -160,7 +162,7 @@ export function RiskTabContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-foreground">
-              {sharpeRatio === 0 ? "—" : sharpeRatio.toFixed(2)}
+              {sharpeRatio === null ? "—" : sharpeRatio.toFixed(2)}
             </div>
           </CardContent>
         </Card>
@@ -174,10 +176,10 @@ export function RiskTabContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-foreground">
-              {sortinoRatio === Infinity
-                ? "∞"
-                : sortinoRatio === 0
-                  ? "—"
+              {sortinoRatio === null
+                ? "—"
+                : sortinoRatio === Infinity
+                  ? "∞"
                   : sortinoRatio.toFixed(2)}
             </div>
           </CardContent>

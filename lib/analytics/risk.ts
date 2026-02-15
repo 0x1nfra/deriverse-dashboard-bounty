@@ -340,20 +340,20 @@ export function calculateSymbolExposure(trades: Trade[]): SymbolExposure[] {
     .sort((a, b) => b.totalAbsPnl - a.totalAbsPnl)
 }
 
-export function calculateSharpeRatio(trades: Trade[]): number {
-  if (trades.length < 2) return 0
+export function calculateSharpeRatio(trades: Trade[]): number | null {
+  if (trades.length < 2) return null
 
   const returns = trades.map((t) => t.pnlPercentage)
   const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length
   const variance = returns.reduce((sum, r) => sum + (r - avgReturn) ** 2, 0) / (returns.length - 1)
   const stdDev = Math.sqrt(variance)
 
-  if (stdDev === 0) return 0
+  if (stdDev === 0) return null
   return avgReturn / stdDev
 }
 
-export function calculateSortinoRatio(trades: Trade[]): number {
-  if (trades.length < 2) return 0
+export function calculateSortinoRatio(trades: Trade[]): number | null {
+  if (trades.length < 2) return null
 
   const returns = trades.map((t) => t.pnlPercentage)
   const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length
@@ -365,7 +365,7 @@ export function calculateSortinoRatio(trades: Trade[]): number {
     negativeReturns.reduce((sum, r) => sum + r ** 2, 0) / negativeReturns.length
   const downsideDev = Math.sqrt(downsideVariance)
 
-  if (downsideDev === 0) return 0
+  if (downsideDev === 0) return null
   return avgReturn / downsideDev
 }
 
@@ -396,7 +396,7 @@ export function calculateRollingSharpe(
         month: "short",
         day: "numeric",
       }),
-      sharpe: Math.round(sharpe * 100) / 100,
+      sharpe: sharpe !== null ? Math.round(sharpe * 100) / 100 : 0,
     })
   }
 

@@ -83,7 +83,8 @@ export function calculateMaxDrawdown(data: PortfolioDataPoint[]): MaxDrawdownRes
     }
   }
 
-  // Check final drawdown
+  // Check final drawdown - guard against non-positive peak values
+  if (currentPeakValue <= 0) return null
   const finalDrawdown = (currentPeakValue - troughValue) / currentPeakValue
   if (finalDrawdown > maxDrawdown) {
     maxDrawdown = finalDrawdown
@@ -193,6 +194,9 @@ export function calculateCurrentDrawdown(data: PortfolioDataPoint[]): CurrentDra
 
   // If current value is at or above peak, no drawdown
   if (currentPoint.value >= peakValue) return null
+
+  // Guard against non-positive peak values
+  if (peakValue <= 0) return null
 
   const drawdownPercentage = ((peakValue - currentPoint.value) / peakValue) * 100
   const daysInDrawdown = Math.ceil(

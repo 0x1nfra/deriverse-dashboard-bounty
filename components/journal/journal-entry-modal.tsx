@@ -54,13 +54,13 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: Jo
   const [selectedEmotion, setSelectedEmotion] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [formData, setFormData] = useState({
-    assetPair: trade ? `${trade.symbol}-PERP` : "SOL-PERP",
-    direction: trade ? trade.side : "long",
-    entryPrice: trade ? trade.entryPrice : "98.50",
-    exitPrice: trade ? "102.30" : "102.30",
-    positionSize: trade ? trade.size : "100",
-    positionUnit: trade ? trade.symbol : "SOL",
-    tradeDate: trade ? new Date().toISOString().slice(0, 16) : "",
+    assetPair: "",
+    direction: "long",
+    entryPrice: "",
+    exitPrice: "",
+    positionSize: "",
+    positionUnit: "",
+    tradeDate: "",
     strategy: "",
     setupDescription: "",
     entryRationale: "",

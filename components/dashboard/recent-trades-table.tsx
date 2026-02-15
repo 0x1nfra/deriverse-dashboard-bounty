@@ -226,7 +226,7 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
                         "text-xs font-mono mt-0.5",
                         trade.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
                       )}>
-                        {trade.pnl >= 0 ? '+' : ''}${trade.pnlUsd.toLocaleString()}
+                        {trade.pnl >= 0 ? '+$' : '-$'}{Math.abs(trade.pnlUsd).toLocaleString()}
                       </span>
                     </div>
                   </td>
