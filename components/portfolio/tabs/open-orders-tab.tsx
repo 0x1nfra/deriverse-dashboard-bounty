@@ -20,6 +20,24 @@ interface OpenOrder {
   tp: number | null
   sl: number | null
   time: string
+  timestamp?: number
+}
+
+// Helper function to parse relative time strings (e.g., "2m ago", "15m ago", "1h ago") to milliseconds ago
+function parseRelativeTimeToMillis(timeStr: string): number {
+  const match = timeStr.match(/^(\d+)\s*([smhd])\s*ago$/i)
+  if (!match) return 0
+
+  const value = parseInt(match[1], 10)
+  const unit = match[2].toLowerCase()
+
+  switch (unit) {
+    case 's': return value * 1000
+    case 'm': return value * 60 * 1000
+    case 'h': return value * 60 * 60 * 1000
+    case 'd': return value * 24 * 60 * 60 * 1000
+    default: return 0
+  }
 }
 
 const defaultOpenOrders: OpenOrder[] = [
@@ -35,6 +53,7 @@ const defaultOpenOrders: OpenOrder[] = [
     tp: 55000,
     sl: 39000,
     time: "2m ago",
+    timestamp: parseRelativeTimeToMillis("2m ago"),
   },
   {
     pair: "ETH/USD",
@@ -48,6 +67,7 @@ const defaultOpenOrders: OpenOrder[] = [
     tp: null,
     sl: null,
     time: "15m ago",
+    timestamp: parseRelativeTimeToMillis("15m ago"),
   },
   {
     pair: "SOL/USD",
@@ -61,6 +81,7 @@ const defaultOpenOrders: OpenOrder[] = [
     tp: 180,
     sl: 95,
     time: "1h ago",
+    timestamp: parseRelativeTimeToMillis("1h ago"),
   },
 ]
 
@@ -79,7 +100,7 @@ function getSortValue(order: OpenOrder, key: SortKey): number | string {
     case "reduceOnly": return order.reduceOnly ? 1 : 0
     case "triggerCondition": return order.triggerCondition ?? ""
     case "tp": return order.tp ?? 0
-    case "time": return order.time
+    case "time": return order.timestamp ?? parseRelativeTimeToMillis(order.time)
   }
 }
 

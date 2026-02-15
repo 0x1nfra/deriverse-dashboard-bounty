@@ -35,11 +35,18 @@ export function AdjustMarginDialog({ open, onOpenChange, position }: AdjustMargi
       ? (newMargin / position.positionValue) * 100
       : 0
 
-    // Estimate new liquidation price based on margin change
-    const marginRatio = newMarginPercent / 100
+    // Calculate liquidation price based on entry price and leverage
+    // Leverage is inverse of margin ratio: leverage = 100 / marginPercent
+    // Liquidation occurs when loss equals initial margin minus maintenance margin
+    const leverage = newMarginPercent > 0 ? 100 / newMarginPercent : Infinity
+    const maintenanceMarginRate = 0.005 // 0.5% standard maintenance margin
+
+    // For longs: liqPrice = entryPrice * (1 - 1/leverage + maintenanceMargin)
+    // For shorts: liqPrice = entryPrice * (1 + 1/leverage - maintenanceMargin)
+    const liqThreshold = (1 / leverage) - maintenanceMarginRate
     const newLiqPrice = position.side === "long"
-      ? position.currentPrice * (1 - marginRatio)
-      : position.currentPrice * (1 + marginRatio)
+      ? position.entryPrice * (1 - liqThreshold)
+      : position.entryPrice * (1 + liqThreshold)
 
     return { newMargin, newMarginPercent, newLiqPrice }
   }, [mode, amountNum, currentMargin, position])

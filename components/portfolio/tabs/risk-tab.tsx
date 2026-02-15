@@ -22,7 +22,6 @@ import {
   calculateSortinoRatio,
 } from "@/lib/analytics/risk"
 import {
-  generatePortfolioData,
   calculateMaxDrawdown,
   calculateCurrentDrawdown,
 } from "@/lib/analytics/drawdown"
@@ -68,12 +67,36 @@ export function RiskTabContent() {
   )
 
   const drawdownMetrics = useMemo(() => {
-    const portfolioData = generatePortfolioData()
+    if (filteredTrades.length === 0) {
+      return {
+        maxDrawdown: null,
+        currentDrawdown: null,
+      }
+    }
+
+    // Sort trades by timestamp and build equity curve from cumulative PnL
+    const sortedTrades = [...filteredTrades].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    )
+
+    let runningPnl = 0
+    const portfolioData = sortedTrades.map((trade) => {
+      runningPnl += trade.pnl
+      return {
+        date: trade.timestamp.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        value: runningPnl,
+        timestamp: trade.timestamp.getTime(),
+      }
+    })
+
     return {
       maxDrawdown: calculateMaxDrawdown(portfolioData),
       currentDrawdown: calculateCurrentDrawdown(portfolioData),
     }
-  }, [])
+  }, [filteredTrades])
 
   if (!isLoading && isClient && filteredTrades.length === 0) {
     if (isDefault) {

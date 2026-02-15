@@ -6,7 +6,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   Cell,
 } from "recharts"
@@ -84,48 +83,46 @@ export function SymbolExposure({ data }: SymbolExposureProps) {
       </div>
       <div className="p-5">
         <ChartContainer config={chartConfig} className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              layout="vertical"
-              margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--chart-grid)"
-                horizontal={false}
-                opacity={0.5}
-              />
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--chart-grid)"
+              horizontal={false}
+              opacity={0.5}
+            />
 
-              <XAxis
-                type="number"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-                tickFormatter={(value) => formatCurrency(value)}
-              />
+            <XAxis
+              type="number"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              tickFormatter={(value) => formatCurrency(value)}
+            />
 
-              <YAxis
-                type="category"
-                dataKey="symbol"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted-foreground)", fontSize: 11, fontFamily: "var(--font-mono, monospace)" }}
-                width={80}
-              />
+            <YAxis
+              type="category"
+              dataKey="symbol"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 11, fontFamily: "var(--font-mono, monospace)" }}
+              width={80}
+            />
 
-              <Tooltip content={<ExposureTooltip />} />
+            <Tooltip content={<ExposureTooltip />} />
 
-              <Bar dataKey="totalAbsPnl" radius={[0, 4, 4, 0]}>
-                {data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={CHART_COLORS[index % CHART_COLORS.length]}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+            <Bar dataKey="totalAbsPnl" radius={[0, 4, 4, 0]}>
+              {data.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={CHART_COLORS[index % CHART_COLORS.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
         </ChartContainer>
       </div>
     </div>

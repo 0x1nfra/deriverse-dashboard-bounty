@@ -8,6 +8,19 @@ import { useFilters } from "@/hooks/use-filters"
 // Secondary tabs for positions section
 const positionTabs = ["Open Positions", "Closed Positions", "Open Orders"]
 
+// Module-level data constants for stable references
+const allClosedPositions = [
+  { pair: "BTC/USD", side: "long" as const, size: "0.3", entryPrice: "45,200", exitPrice: "47,800", pnl: "+5.75%", pnlPositive: true, closedAt: "2024-01-25" },
+  { pair: "ETH/USD", side: "short" as const, size: "5.0", entryPrice: "2,100", exitPrice: "2,050", pnl: "-2.38%", pnlPositive: false, closedAt: "2024-01-24" },
+  { pair: "SOL/USD", side: "long" as const, size: "100", entryPrice: "85.00", exitPrice: "98.50", pnl: "+15.88%", pnlPositive: true, closedAt: "2024-01-23" },
+]
+
+const allOpenOrders = [
+  { pair: "BTC/USD", side: "long" as const, type: "Limit Buy", price: "42,000", size: "0.2", status: "Pending" },
+  { pair: "ETH/USD", side: "short" as const, type: "Stop Loss", price: "2,200", size: "3.0", status: "Active" },
+  { pair: "SOL/USD", side: "long" as const, type: "Take Profit", price: "120.00", size: "25", status: "Active" },
+]
+
 export function PositionsTabContent() {
   const [activePositionTab, setActivePositionTab] = useState("Open Positions")
 
@@ -51,11 +64,6 @@ export function PositionsTabContent() {
 // Closed Positions Table Component
 function ClosedPositionsTable() {
   const { filters } = useFilters()
-  const allClosedPositions = [
-    { pair: "BTC/USD", side: "long" as const, size: "0.3", entryPrice: "45,200", exitPrice: "47,800", pnl: "+5.75%", pnlPositive: true, closedAt: "2024-01-25" },
-    { pair: "ETH/USD", side: "short" as const, size: "5.0", entryPrice: "2,100", exitPrice: "2,050", pnl: "-2.38%", pnlPositive: false, closedAt: "2024-01-24" },
-    { pair: "SOL/USD", side: "long" as const, size: "100", entryPrice: "85.00", exitPrice: "98.50", pnl: "+15.88%", pnlPositive: true, closedAt: "2024-01-23" },
-  ]
 
   const closedPositions = useMemo(() => {
     if (filters.tradeType === "long") return allClosedPositions.filter(p => p.side === "long")
@@ -114,11 +122,6 @@ function ClosedPositionsTable() {
 // Open Orders Table Component
 function OpenOrdersTable() {
   const { filters } = useFilters()
-  const allOpenOrders = [
-    { pair: "BTC/USD", side: "long" as const, type: "Limit Buy", price: "42,000", size: "0.2", status: "Pending" },
-    { pair: "ETH/USD", side: "short" as const, type: "Stop Loss", price: "2,200", size: "3.0", status: "Active" },
-    { pair: "SOL/USD", side: "long" as const, type: "Take Profit", price: "120.00", size: "25", status: "Active" },
-  ]
 
   const openOrders = useMemo(() => {
     if (filters.tradeType === "long") return allOpenOrders.filter(o => o.side === "long")

@@ -9,6 +9,15 @@ import { useFilters } from "@/hooks/use-filters"
 import { ClosePositionDialog } from "./close-position-dialog"
 import { AdjustMarginDialog } from "./adjust-margin-dialog"
 
+// Deterministic margin percent generator (5-20%) based on trade data
+function getDeterministicMarginPercent(trade: Trade): number {
+  // Use trade properties to generate a deterministic value between 5-20%
+  const hash = trade.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const sizeHash = trade.size.toString().split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const combined = (hash + sizeHash) % 1000
+  return 5 + (combined / 1000) * 15 // Range: 5-20%
+}
+
 // Mock data for open positions with liquidation and margin data
 export interface Position {
   pair: string
@@ -203,8 +212,9 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
 
   // Use provided trades or fallback to default mock data
   // For open positions, we simulate positions from the trades data
-  const rawPositions: Position[] = trades && trades.length > 0
-    ? trades.slice(0, 4).map((trade) => {
+  const rawPositions = useMemo<Position[]>(() => {
+    if (trades && trades.length > 0) {
+      return trades.slice(0, 4).map((trade) => {
         const side = trade.side as "long" | "short"
         const currentPrice = trade.exitPrice
         const entryPrice = trade.entryPrice
@@ -212,7 +222,7 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
         const liqPrice = side === "long"
           ? entryPrice * 0.85
           : entryPrice * 1.15
-        const marginPercent = Math.random() * 15 + 5 // Random margin between 5-20%
+        const marginPercent = getDeterministicMarginPercent(trade) // Deterministic margin between 5-20%
         const pnlUsd = trade.pnl
         const positionValue = trade.size * currentPrice
 
@@ -231,7 +241,9 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
           funding: trade.fees.funding,
         }
       })
-    : defaultOpenPositions
+    }
+    return defaultOpenPositions
+  }, [trades])
 
   const filteredPositions = useMemo(() => {
     if (filters.tradeType === "long") return rawPositions.filter(p => p.side === "long")
