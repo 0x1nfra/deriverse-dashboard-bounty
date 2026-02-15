@@ -1,7 +1,5 @@
 "use client"
 
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -10,12 +8,30 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function JournalFilters() {
+export type DateRange = "all" | "today" | "week" | "month" | "year"
+
+export interface JournalFilterValues {
+  dateRange: DateRange
+  tag: string
+}
+
+interface JournalFiltersProps {
+  onFilterChange: (filters: JournalFilterValues) => void
+  filters: JournalFilterValues
+  availableTags: string[]
+}
+
+export function JournalFilters({ onFilterChange, filters, availableTags }: JournalFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
+    <div className="flex items-center gap-2">
       {/* Date Range */}
-      <Select defaultValue="all">
-        <SelectTrigger className="w-[140px] bg-card border-border">
+      <Select
+        value={filters.dateRange}
+        onValueChange={(value: DateRange) =>
+          onFilterChange({ ...filters, dateRange: value })
+        }
+      >
+        <SelectTrigger className="w-[130px] h-8 text-xs bg-card border-border">
           <SelectValue placeholder="Date Range" />
         </SelectTrigger>
         <SelectContent>
@@ -27,67 +43,25 @@ export function JournalFilters() {
         </SelectContent>
       </Select>
 
-      {/* Asset Filter */}
-      <Select defaultValue="all">
-        <SelectTrigger className="w-[140px] bg-card border-border">
-          <SelectValue placeholder="Asset" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Assets</SelectItem>
-          <SelectItem value="btc">BTC-PERP</SelectItem>
-          <SelectItem value="eth">ETH-PERP</SelectItem>
-          <SelectItem value="sol">SOL-PERP</SelectItem>
-          <SelectItem value="xrp">XRP-PERP</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Direction Filter */}
-      <Select defaultValue="all">
-        <SelectTrigger className="w-[120px] bg-card border-border">
-          <SelectValue placeholder="Direction" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All</SelectItem>
-          <SelectItem value="long">Long</SelectItem>
-          <SelectItem value="short">Short</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Strategy Filter */}
-      <Select defaultValue="all">
-        <SelectTrigger className="w-[140px] bg-card border-border">
-          <SelectValue placeholder="Strategy" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Strategies</SelectItem>
-          <SelectItem value="breakout">Breakout</SelectItem>
-          <SelectItem value="momentum">Momentum</SelectItem>
-          <SelectItem value="scalping">Scalping</SelectItem>
-          <SelectItem value="mean-revert">Mean Revert</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Tags Filter */}
-      <Select defaultValue="all">
-        <SelectTrigger className="w-[120px] bg-card border-border">
+      {/* Tags */}
+      <Select
+        value={filters.tag}
+        onValueChange={(value: string) =>
+          onFilterChange({ ...filters, tag: value })
+        }
+      >
+        <SelectTrigger className="w-[120px] h-8 text-xs bg-card border-border">
           <SelectValue placeholder="Tags" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Tags</SelectItem>
-          <SelectItem value="scalp">Scalp</SelectItem>
-          <SelectItem value="breakout">Breakout</SelectItem>
-          <SelectItem value="long">Long</SelectItem>
+          {availableTags.map((tag) => (
+            <SelectItem key={tag} value={tag}>
+              {tag}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
-
-      {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search entries..." 
-          className="pl-9 bg-card border-border"
-        />
-      </div>
     </div>
   )
 }

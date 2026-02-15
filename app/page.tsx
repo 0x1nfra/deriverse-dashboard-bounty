@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Plus } from "lucide-react";
 
 // Sub-tab content components
 import { TradingTabContent } from "@/components/portfolio/tabs/trading-tab";
 import { AnalyticsTabContent } from "@/components/portfolio/tabs/analytics-tab";
 import { JournalTabContent } from "@/components/portfolio/tabs/journal-tab";
-import { VolumeFeesTabContent } from "@/components/portfolio/tabs/volume-fees-tab";
+
 import { RiskTabContent } from "@/components/portfolio/tabs/risk-tab";
 import { PersistentSummaryCard } from "@/components/portfolio/persistent-summary-card";
 import { OpenPositionsTable } from "@/components/dashboard/open-positions-table";
@@ -18,20 +18,45 @@ import { OpenOrdersTabContent } from "@/components/portfolio/tabs/open-orders-ta
 // Filter components
 import { FilterProvider } from "@/components/providers/filter-provider";
 import { GlobalFilterBar } from "@/components/filters/global-filter-bar";
+import { JournalFilters, type JournalFilterValues } from "@/components/journal/journal-filters";
+import { mockJournalEntries } from "@/lib/mock/journal-data";
 
 // Sub-tabs configuration
 const subTabs = [
   { id: "positions", label: "Positions" },
   { id: "open-orders", label: "Open Orders" },
   { id: "history", label: "History" },
-  { id: "analytics", label: "Analytics" },
   { id: "journal", label: "Journal" },
-  { id: "volume-fees", label: "Volume & Fees" },
+  { id: "analytics", label: "Analytics" },
+
   { id: "risk", label: "Risk" },
 ];
 
+const filterableTabs = ["positions", "open-orders", "history"];
+
 export default function PortfolioDashboard() {
-  const [activeTab, setActiveTab] = useState("history");
+  const [activeTab, setActiveTab] = useState("positions");
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [journalFilters, setJournalFilters] = useState<JournalFilterValues>({
+    dateRange: "all",
+    tag: "all",
+  });
+
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    mockJournalEntries.forEach((entry) => {
+      entry.tags.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, []);
+
+  const handleNewJournalEntry = () => {
+    setIsJournalModalOpen(true);
+  };
+
+  const handleCloseJournalModal = () => {
+    setIsJournalModalOpen(false);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -44,9 +69,14 @@ export default function PortfolioDashboard() {
       case "analytics":
         return <AnalyticsTabContent />;
       case "journal":
-        return <JournalTabContent />;
-      case "volume-fees":
-        return <VolumeFeesTabContent />;
+        return (
+          <JournalTabContent
+            isModalOpen={isJournalModalOpen}
+            onNewEntry={handleNewJournalEntry}
+            onCloseModal={handleCloseJournalModal}
+            journalFilters={journalFilters}
+          />
+        );
       case "risk":
         return <RiskTabContent />;
       default:
@@ -63,7 +93,6 @@ export default function PortfolioDashboard() {
             <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">
               Portfolio
             </h1>
-            {/* <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and track your trading portfolio</p> */}
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Button
@@ -89,30 +118,78 @@ export default function PortfolioDashboard() {
         {/* Persistent Summary Card */}
         <PersistentSummaryCard />
 
-        {/* Global Filter Bar */}
-        <GlobalFilterBar />
+        {/* Sub-Tab Navigation + Inline Filters */}
+        <div className="border-b border-border mb-6">
+          <div className="flex items-center justify-between gap-4">
+            {/* Tabs - left side */}
+            <nav className="flex items-center gap-1 min-w-max overflow-x-auto scrollbar-hide">
+              {subTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer",
+                    activeTab === tab.id
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                  )}
+                </button>
+              ))}
+            </nav>
 
-        {/* Sub-Tab Navigation */}
-        <div className="border-b border-border mb-6 overflow-x-auto scrollbar-hide">
-          <nav className="flex items-center gap-1 min-w-max">
-            {subTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap",
-                  activeTab === tab.id
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </button>
-            ))}
-          </nav>
+            {/* Right side - filters or journal controls */}
+            <div className="hidden sm:flex items-center gap-2 flex-shrink-0 py-1.5">
+              {filterableTabs.includes(activeTab) && <GlobalFilterBar />}
+              {activeTab === "journal" && (
+                <>
+                  <Button
+                    size="icon"
+                    onClick={handleNewJournalEntry}
+                    className="h-8 w-8 bg-primary hover:bg-primary/90"
+                    aria-label="New journal entry"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <JournalFilters
+                    filters={journalFilters}
+                    onFilterChange={setJournalFilters}
+                    availableTags={availableTags}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile: filters/journal controls below tabs */}
+          <div className="sm:hidden pb-2 px-1">
+            {filterableTabs.includes(activeTab) && (
+              <div className="pt-2">
+                <GlobalFilterBar />
+              </div>
+            )}
+            {activeTab === "journal" && (
+              <div className="flex items-center gap-2 pt-2">
+                <Button
+                  size="icon"
+                  onClick={handleNewJournalEntry}
+                  className="h-8 w-8 bg-primary hover:bg-primary/90 flex-shrink-0"
+                  aria-label="New journal entry"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <JournalFilters
+                  filters={journalFilters}
+                  onFilterChange={setJournalFilters}
+                  availableTags={availableTags}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Dynamic Tab Content */}

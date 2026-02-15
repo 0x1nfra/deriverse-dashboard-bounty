@@ -1,12 +1,12 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Figtree } from 'next/font/google'
+import { IBM_Plex_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { TopNavigation } from '@/components/top-navigation'
 import { ErrorBoundary } from '@/components/error-boundary'
 import './globals.css'
 
-const figtree = Figtree({ subsets: ["latin"] });
+const ibmPlexSans = IBM_Plex_Sans({ weight: ["400", "500", "600", "700"], subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Deriverse - Trading Journal & Portfolio Analytics',
@@ -29,10 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${figtree.className} antialiased bg-background text-foreground min-h-screen`}>
+      <body className={`${ibmPlexSans.className} antialiased bg-background text-foreground min-h-screen`}>
         <ErrorBoundary>
           <TopNavigation />
-          <main className="pt-16">
+          <main className="pt-12">
             {children}
           </main>
         </ErrorBoundary>

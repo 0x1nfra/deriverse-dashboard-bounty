@@ -1,143 +1,45 @@
 "use client"
 
 import * as React from "react"
-import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import {
   FilterState,
   DEFAULT_FILTER_STATE,
-  DEFAULT_SYMBOLS,
-  getDateRangeFromPreset,
-  parseFiltersFromUrl,
-  serializeFiltersToUrl,
-  DateRangePreset,
+  TradeTypeFilter,
 } from "@/lib/filters"
 
 interface FilterContextType {
   filters: FilterState
-  setSelectedSymbols: (symbols: string[]) => void
-  setDateRangePreset: (preset: DateRangePreset) => void
+  setTradeType: (type: TradeTypeFilter) => void
   resetFilters: () => void
-  activeFilterCount: number
   isDefault: boolean
 }
 
 const FilterContext = React.createContext<FilterContextType | undefined>(undefined)
 
-function FilterProviderInner({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const isClient = typeof window !== 'undefined'
+export function FilterProvider({ children }: { children: React.ReactNode }) {
+  const [filters, setFilters] = React.useState<FilterState>(DEFAULT_FILTER_STATE)
 
-  // Initialize state from URL or defaults
-  // Note: Date ranges are computed client-side only to avoid SSR hydration mismatches
-  const [filters, setFilters] = React.useState<FilterState>(() => {
-    const urlFilters = parseFiltersFromUrl(searchParams)
-    return {
-      ...DEFAULT_FILTER_STATE,
-      ...urlFilters,
-    }
-  })
-
-  // Compute date ranges on client side after hydration
-  React.useEffect(() => {
-    if (!isClient) return
-    
-    setFilters((prev) => {
-      // Only update if dates are null (initial SSR state)
-      if (prev.dateRange.from === null || prev.dateRange.to === null) {
-        const { from, to } = getDateRangeFromPreset(prev.dateRange.preset)
-        return {
-          ...prev,
-          dateRange: {
-            ...prev.dateRange,
-            from,
-            to,
-          },
-        }
-      }
-      return prev
-    })
-  }, [isClient])
-
-  // Update URL when filters change
-  React.useEffect(() => {
-    const queryString = serializeFiltersToUrl(filters)
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname
-    router.replace(newUrl, { scroll: false })
-  }, [filters, pathname, router])
-
-  const setSelectedSymbols = React.useCallback((symbols: string[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedSymbols: symbols,
-    }))
-  }, [])
-
-  const setDateRangePreset = React.useCallback((preset: DateRangePreset) => {
-    const { from, to } = getDateRangeFromPreset(preset)
-    setFilters((prev) => ({
-      ...prev,
-      dateRange: {
-        preset,
-        from,
-        to,
-      },
-    }))
+  const setTradeType = React.useCallback((type: TradeTypeFilter) => {
+    setFilters({ tradeType: type })
   }, [])
 
   const resetFilters = React.useCallback(() => {
-    const { from, to } = getDateRangeFromPreset("7d")
-    setFilters({
-      selectedSymbols: [...DEFAULT_SYMBOLS],
-      dateRange: {
-        preset: "7d",
-        from,
-        to,
-      },
-    })
+    setFilters(DEFAULT_FILTER_STATE)
   }, [])
 
-  // Calculate active filter count
-  const activeFilterCount = React.useMemo(() => {
-    let count = 0
-    if (filters.selectedSymbols.length !== DEFAULT_SYMBOLS.length) {
-      count++
-    }
-    if (filters.dateRange.preset !== "7d") {
-      count++
-    }
-    return count
-  }, [filters])
-
-  const isDefault = React.useMemo(() => {
-    return (
-      filters.selectedSymbols.length === DEFAULT_SYMBOLS.length &&
-      filters.dateRange.preset === "7d"
-    )
-  }, [filters])
+  const isDefault = filters.tradeType === "all"
 
   const value = React.useMemo(
     () => ({
       filters,
-      setSelectedSymbols,
-      setDateRangePreset,
+      setTradeType,
       resetFilters,
-      activeFilterCount,
       isDefault,
     }),
-    [filters, setSelectedSymbols, setDateRangePreset, resetFilters, activeFilterCount, isDefault]
+    [filters, setTradeType, resetFilters, isDefault]
   )
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
-}
-
-export function FilterProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <React.Suspense fallback={<div className="min-h-screen bg-background" />}>
-      <FilterProviderInner>{children}</FilterProviderInner>
-    </React.Suspense>
-  )
 }
 
 export function useFilterContext() {

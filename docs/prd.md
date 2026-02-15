@@ -16,7 +16,8 @@ A comprehensive trading analytics dashboard for Deriverse's on-chain perpetual a
 
 ### Core Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
+- **Frontend**: React 19
 - **Styling**: TailwindCSS
 - **State Management**: Zustand
 - **UI Components**: shadcn/ui
@@ -47,12 +48,14 @@ A comprehensive trading analytics dashboard for Deriverse's on-chain perpetual a
 - Maximum drawdown visualization on historical PnL chart (peak-to-trough percentage)
 - Long/Short ratio gauge with directional bias trend over selected timeframe
 
-### FR-3: Temporal Analysis
+### FR-3: Temporal Analysis (Not Implemented)
 
-- Trade duration distribution (average, median, range) with histogram visualization
-- Time-of-day performance heatmap showing PnL by hour (local timezone)
-- Session-based grouping (Asian, European, American trading sessions) with performance attribution
-- Daily PnL calendar view with color-coded profit/loss intensity
+- ~~Trade duration distribution (average, median, range) with histogram visualization~~
+- ~~Time-of-day performance heatmap showing PnL by hour (local timezone)~~
+- ~~Session-based grouping (Asian, European, American trading sessions) with performance attribution~~
+- ~~Daily PnL calendar view with color-coded profit/loss intensity~~
+
+*Note: Temporal analysis features were deprioritized in favor of core analytics and risk management features.*
 
 ### FR-4: Trade History & Journaling
 
@@ -122,7 +125,7 @@ Organisms
 - **AC-7**: Annotations persist in Zustand store and export to CSV column without data loss
 - **AC-8**: Fee composition percentages sum to exactly 100% ±0.01% across all fee types
 - **AC-9**: Responsive layout maintains functionality at 320px, 768px, and 1440px breakpoints
-- **AC-10**: Time-of-day heatmap displays 24 hourly buckets with correct timezone conversion from UTC trade timestamps
+- ~~**AC-10**: Time-of-day heatmap displays 24 hourly buckets with correct timezone conversion from UTC trade timestamps~~ (Not Implemented)
 
 ## Out of Scope
 

@@ -102,7 +102,7 @@ export function PerformanceChart({ trades }: PerformanceChartProps) {
                   <stop offset="95%" stopColor="#5471f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey="day" 
                 axisLine={false}
