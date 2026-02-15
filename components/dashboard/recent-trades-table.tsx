@@ -1,13 +1,14 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
+import { BookOpen, ChevronUp, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { BookOpen, ChevronUp, ChevronDown } from "lucide-react"
 import { Trade } from "@/lib/mock/trades"
 import { JournalEntryModal } from "@/components/journal/journal-entry-modal"
 
 interface DisplayTrade {
+  id: string
   pair: string
   side: "long" | "short"
   size: string
@@ -27,9 +28,9 @@ interface DisplayTrade {
 
 // Mock data for recent trades (fallback when no trades provided)
 const defaultRecentTrades: DisplayTrade[] = [
-  { pair: "BTC/USD", side: "long", size: "0.5", sizeNum: 0.5, positionValue: 24600, entryPrice: "48,500", entryPriceNum: 48500, exitPrice: "49,200", exitPriceNum: 49200, pnl: 350, pnlPercentage: 1.44, pnlUsd: 350, time: "10m ago", timestamp: Date.now() - 600000, symbol: "BTC" },
-  { pair: "ETH/USD", side: "long", size: "0.5", sizeNum: 0.5, positionValue: 1260, entryPrice: "2,450", entryPriceNum: 2450, exitPrice: "2,520", exitPriceNum: 2520, pnl: 35, pnlPercentage: 2.86, pnlUsd: 35, time: "10m ago", timestamp: Date.now() - 600000, symbol: "ETH" },
-  { pair: "XRP/USD", side: "short", size: "1", sizeNum: 1, positionValue: 0.48, entryPrice: "0.52", entryPriceNum: 0.52, exitPrice: "0.48", exitPriceNum: 0.48, pnl: 0.04, pnlPercentage: 7.69, pnlUsd: 0.04, time: "10m ago", timestamp: Date.now() - 600000, symbol: "XRP" },
+  { id: "default-btc-1", pair: "BTC/USD", side: "long", size: "0.5", sizeNum: 0.5, positionValue: 24600, entryPrice: "48,500", entryPriceNum: 48500, exitPrice: "49,200", exitPriceNum: 49200, pnl: 350, pnlPercentage: 1.44, pnlUsd: 350, time: "10m ago", timestamp: Date.now() - 600000, symbol: "BTC" },
+  { id: "default-eth-1", pair: "ETH/USD", side: "long", size: "0.5", sizeNum: 0.5, positionValue: 1260, entryPrice: "2,450", entryPriceNum: 2450, exitPrice: "2,520", exitPriceNum: 2520, pnl: 35, pnlPercentage: 2.86, pnlUsd: 35, time: "10m ago", timestamp: Date.now() - 600000, symbol: "ETH" },
+  { id: "default-xrp-1", pair: "XRP/USD", side: "short", size: "1", sizeNum: 1, positionValue: 0.48, entryPrice: "0.52", entryPriceNum: 0.52, exitPrice: "0.48", exitPriceNum: 0.48, pnl: 0.04, pnlPercentage: 7.69, pnlUsd: 0.04, time: "10m ago", timestamp: Date.now() - 600000, symbol: "XRP" },
 ]
 
 interface RecentTradesTableProps {
@@ -137,6 +138,7 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
     if (trades && trades.length > 0) {
       return trades.slice(0, 5).map((trade) => {
         return {
+          id: trade.id,
           pair: `${trade.symbol}/USD`,
           side: trade.side,
           size: trade.size.toString(),
@@ -199,15 +201,15 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {sortedTrades.map((trade, idx) => (
-                <tr key={idx} className="hover:bg-secondary/30 transition-colors">
+              {sortedTrades.map((trade) => (
+                <tr key={trade.id} className="hover:bg-secondary/30 transition-colors">
                   <td className="px-5 py-3 text-sm font-medium text-foreground">{trade.pair}</td>
                   <td className="px-5 py-3">
                     <span className={cn(
                       "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
                       trade.side === "long"
-                        ? "bg-emerald-500/20 text-emerald-500"
-                        : "bg-rose-500/20 text-rose-500"
+                        ? "bg-success/20 text-success"
+                        : "bg-destructive/20 text-destructive"
                     )}>
                       {trade.side.toUpperCase()}
                     </span>
@@ -218,13 +220,13 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
                   <td className="px-5 py-3 text-sm font-mono text-foreground">${trade.exitPrice}</td>
                   <td className={cn(
                     "px-5 py-3 text-right",
-                    trade.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                    trade.pnl >= 0 ? "text-success" : "text-destructive"
                   )}>
                     <div className="flex flex-col items-end">
                       <span className="text-sm font-mono font-medium">{trade.pnl >= 0 ? '+' : ''}{trade.pnlPercentage.toFixed(1)}%</span>
                       <span className={cn(
                         "text-xs font-mono mt-0.5",
-                        trade.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                        trade.pnl >= 0 ? "text-success" : "text-destructive"
                       )}>
                         {trade.pnl >= 0 ? '+$' : '-$'}{Math.abs(trade.pnlUsd).toLocaleString()}
                       </span>

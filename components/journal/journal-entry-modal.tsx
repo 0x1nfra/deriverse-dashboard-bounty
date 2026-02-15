@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { X, Upload, TrendingUp, TrendingDown, BarChart3, FileText, Smile, Image as ImageIcon, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -50,7 +50,7 @@ const emotionalStates = [
 
 const tradeTags = ["Scalp", "Breakout", "Long", "Momentum", "Swing", "Day Trade"]
 
-export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: JournalEntryModalProps) {
+export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: JournalEntryModalProps): React.ReactElement {
   const [selectedEmotion, setSelectedEmotion] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [formData, setFormData] = useState({
