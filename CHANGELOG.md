@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-02-15
+
+### Added
+
+- MIT LICENSE with proper attribution
+- Social media links (Twitter/X) to README
+
+### Changed
+
+- Consolidated Volume & Fees tab into Analysis tab for streamlined UX
+- Simplified global filters with cleaner interface
+- Refined Risk tab layout and visual hierarchy
+- Improved Journal tab with better annotation displays
+- Enhanced History tab with refined trade table design
+- Updated Positions table with clearer status indicators
+- Polished Open Orders table layout
+- Merged redundant analytics views for better information density
+- Updated all documentation for bounty submission
+- Removed deprecated tasks.md file
+
+### Fixed
+
+- Inconsistent datetime axis spacing on portfolio charts
+- Thread synchronization issues in filter components
+
 ## [0.2.0] - 2025-02-11
 
 ### Changed
