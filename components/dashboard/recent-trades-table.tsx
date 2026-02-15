@@ -254,6 +254,7 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         editingEntryId={null}
+        trade={selectedTrade ?? undefined}
       />
     </>
   )

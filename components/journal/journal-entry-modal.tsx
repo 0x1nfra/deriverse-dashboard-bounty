@@ -22,10 +22,21 @@ import {
 } from "@/components/ui/select"
 import { getJournalEntryByTradeId } from "@/lib/mock/journal-data"
 
+interface TradeInfo {
+  pair: string
+  side: "long" | "short"
+  size: string
+  entryPrice: string
+  symbol: string
+  pnl: number
+  pnlPercentage: number
+}
+
 interface JournalEntryModalProps {
   isOpen: boolean
   onClose: () => void
   editingEntryId: string | null
+  trade?: TradeInfo
 }
 
 const emotionalStates = [
@@ -39,24 +50,24 @@ const emotionalStates = [
 
 const tradeTags = ["Scalp", "Breakout", "Long", "Momentum", "Swing", "Day Trade"]
 
-export function JournalEntryModal({ isOpen, onClose, editingEntryId }: JournalEntryModalProps) {
+export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: JournalEntryModalProps) {
   const [selectedEmotion, setSelectedEmotion] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [formData, setFormData] = useState({
-    assetPair: "SOL-PERP",
-    direction: "long",
-    entryPrice: "98.50",
-    exitPrice: "102.30",
-    positionSize: "100",
-    positionUnit: "SOL",
-    tradeDate: "",
+    assetPair: trade ? `${trade.symbol}-PERP` : "SOL-PERP",
+    direction: trade ? trade.side : "long",
+    entryPrice: trade ? trade.entryPrice : "98.50",
+    exitPrice: trade ? "102.30" : "102.30",
+    positionSize: trade ? trade.size : "100",
+    positionUnit: trade ? trade.symbol : "SOL",
+    tradeDate: trade ? new Date().toISOString().slice(0, 16) : "",
     strategy: "",
     setupDescription: "",
     entryRationale: "",
     exitRationale: "",
   })
 
-  // Populate form data when editing an existing entry
+  // Populate form data when editing an existing entry or opening with trade data
   useEffect(() => {
     if (editingEntryId) {
       const entry = getJournalEntryByTradeId(editingEntryId)
@@ -84,8 +95,25 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId }: JournalEn
         // Set tags
         setSelectedTags(entry.tags)
       }
+    } else if (trade) {
+      // Populate from trade data for new journal entry
+      setFormData({
+        assetPair: `${trade.symbol}-PERP`,
+        direction: trade.side,
+        entryPrice: trade.entryPrice,
+        exitPrice: "",
+        positionSize: trade.size,
+        positionUnit: trade.symbol,
+        tradeDate: new Date().toISOString().slice(0, 16),
+        strategy: "",
+        setupDescription: "",
+        entryRationale: "",
+        exitRationale: "",
+      })
+      setSelectedEmotion(null)
+      setSelectedTags([])
     } else {
-      // Reset to defaults for new entry
+      // Reset to defaults for new entry without trade data
       setFormData({
         assetPair: "SOL-PERP",
         direction: "long",
@@ -102,7 +130,7 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId }: JournalEn
       setSelectedEmotion(null)
       setSelectedTags([])
     }
-  }, [editingEntryId, isOpen])
+  }, [editingEntryId, trade, isOpen])
 
   // Calculate P&L with direction
   const entryPrice = parseFloat(formData.entryPrice) || 0

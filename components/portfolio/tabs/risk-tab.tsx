@@ -71,6 +71,7 @@ export function RiskTabContent() {
       return {
         maxDrawdown: null,
         currentDrawdown: null,
+        portfolioData: [],
       }
     }
 
@@ -95,6 +96,7 @@ export function RiskTabContent() {
     return {
       maxDrawdown: calculateMaxDrawdown(portfolioData),
       currentDrawdown: calculateCurrentDrawdown(portfolioData),
+      portfolioData,
     }
   }, [filteredTrades])
 
@@ -184,7 +186,7 @@ export function RiskTabContent() {
 
       {/* Section 2: Drawdown Chart */}
       <section>
-        <DrawdownChart />
+        <DrawdownChart portfolioData={drawdownMetrics.portfolioData} />
       </section>
 
       {/* Section 3: Rolling Sharpe Chart */}
@@ -194,7 +196,7 @@ export function RiskTabContent() {
 
       {/* Section 4: Recovery Analysis */}
       <section>
-        <RecoveryAnalysis />
+        <RecoveryAnalysis portfolioData={drawdownMetrics.portfolioData} />
       </section>
 
       {/* Section 5: Extreme Trades */}

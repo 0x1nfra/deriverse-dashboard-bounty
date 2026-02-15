@@ -37,21 +37,21 @@ export function PerformanceByDay({ trades }: PerformanceByDayProps) {
                 dataKey="dayShort"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 11 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 11 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
                 tickFormatter={(value) => formatCurrency(value)}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#161a25",
-                  border: "1px solid #1e2433",
+                  backgroundColor: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: "6px",
                 }}
-                labelStyle={{ color: "#FFFFFF" }}
+                labelStyle={{ color: "var(--foreground)" }}
                 formatter={(value: number, name: string) => [
                   formatCurrency(value),
                   name === "pnl" ? "PnL" : name,
@@ -61,7 +61,7 @@ export function PerformanceByDay({ trades }: PerformanceByDayProps) {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.pnl >= 0 ? "#10B981" : "#EF4444"}
+                    fill={entry.pnl >= 0 ? "var(--success)" : "var(--destructive)"}
                   />
                 ))}
               </Bar>

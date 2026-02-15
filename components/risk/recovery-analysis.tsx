@@ -4,9 +4,9 @@ import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import {
-  generatePortfolioData,
   calculateRecoveryPeriods,
-  RecoveryPeriod,
+  type RecoveryPeriod,
+  type PortfolioDataPoint,
 } from "@/lib/analytics/drawdown"
 import { Clock, Zap, TrendingDown } from "lucide-react"
 
@@ -16,11 +16,14 @@ function formatDays(days: number): string {
   return `${days} days`
 }
 
-export function RecoveryAnalysis() {
+interface RecoveryAnalysisProps {
+  portfolioData: PortfolioDataPoint[]
+}
+
+export function RecoveryAnalysis({ portfolioData }: RecoveryAnalysisProps) {
   const periods = useMemo(() => {
-    const portfolioData = generatePortfolioData()
     return calculateRecoveryPeriods(portfolioData)
-  }, [])
+  }, [portfolioData])
 
   if (periods.length === 0) return null
 

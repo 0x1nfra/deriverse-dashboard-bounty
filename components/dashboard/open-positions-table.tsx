@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { X, SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Trade } from "@/lib/mock/trades"
-import { X, SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
 import { useFilters } from "@/hooks/use-filters"
-import { ClosePositionDialog } from "./close-position-dialog"
-import { AdjustMarginDialog } from "./adjust-margin-dialog"
+import { ClosePositionDialog } from "@/components/dashboard/close-position-dialog"
+import { AdjustMarginDialog } from "@/components/dashboard/adjust-margin-dialog"
 
 // Deterministic margin percent generator (5-20%) based on trade data
 function getDeterministicMarginPercent(trade: Trade): number {
@@ -325,7 +325,7 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
                         "text-xs font-mono mt-0.5",
                         position.pnlPositive ? "text-emerald-500" : "text-rose-500"
                       )}>
-                        {position.pnlPositive ? '+' : ''}${position.pnlUsd.toLocaleString()}
+                        {position.pnlPositive ? '+$' : '-$'}{Math.abs(position.pnlUsd).toLocaleString()}
                       </span>
                     </div>
                   </td>
@@ -349,7 +349,7 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
                     "px-5 py-3 text-right text-sm font-mono",
                     position.funding >= 0 ? "text-emerald-500" : "text-rose-500"
                   )}>
-                    {position.funding >= 0 ? '+' : ''}${position.funding.toFixed(2)}
+                    {position.funding >= 0 ? '+$' : '-$'}{Math.abs(position.funding).toFixed(2)}
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-center gap-2">

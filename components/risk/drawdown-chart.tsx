@@ -13,8 +13,8 @@ import {
 import { ChartContainer } from "@/components/ui/chart"
 import { cn } from "@/lib/utils"
 import {
-  generatePortfolioData,
   calculateRunningDrawdown,
+  type PortfolioDataPoint,
 } from "@/lib/analytics/drawdown"
 
 const timePeriods = [
@@ -63,18 +63,21 @@ const chartConfig = {
   },
 }
 
-export function DrawdownChart() {
+interface DrawdownChartProps {
+  portfolioData: PortfolioDataPoint[]
+}
+
+export function DrawdownChart({ portfolioData }: DrawdownChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState("90D")
 
   const allData = useMemo(() => {
-    const portfolioData = generatePortfolioData()
     const drawdowns = calculateRunningDrawdown(portfolioData)
 
     return portfolioData.map((point, i) => ({
       date: point.date,
       drawdown: drawdowns[i],
     }))
-  }, [])
+  }, [portfolioData])
 
   const data = useMemo(() => {
     const period = timePeriods.find((p) => p.label === selectedPeriod)
