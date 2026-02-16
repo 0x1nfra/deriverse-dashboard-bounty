@@ -36,9 +36,8 @@ export const usePositionsStore = create<PositionsStore>()(
             const currentMargin = p.positionValue * p.marginPercent / 100
             const delta = mode === "add" ? amount : -amount
             const newMargin = Math.max(0, currentMargin + delta)
-            const newPositionValue = p.positionValue + delta
-            const newMarginPercent = newPositionValue > 0
-              ? (newMargin / newPositionValue) * 100
+            const newMarginPercent = p.positionValue > 0
+              ? (newMargin / p.positionValue) * 100
               : 0
             const newLiqPrice = calculateLiqPrice(
               p.entryPrice,
@@ -48,7 +47,6 @@ export const usePositionsStore = create<PositionsStore>()(
 
             return {
               ...p,
-              positionValue: newPositionValue,
               marginPercent: newMarginPercent,
               liqPrice: newLiqPrice,
             }
