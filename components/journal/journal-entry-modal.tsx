@@ -27,6 +27,7 @@ interface TradeInfo {
   side: "long" | "short"
   size: string
   entryPrice: string
+  exitPrice: string
   symbol: string
   pnl: number
   pnlPercentage: number
@@ -53,6 +54,7 @@ const tradeTags = ["Scalp", "Breakout", "Long", "Momentum", "Swing", "Day Trade"
 export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: JournalEntryModalProps): React.ReactElement {
   const [selectedEmotion, setSelectedEmotion] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [sourcePnl, setSourcePnl] = useState<{ pnl: number; pnlPercentage: number } | null>(null)
   const [formData, setFormData] = useState({
     assetPair: "",
     direction: "long",
@@ -85,13 +87,14 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: Jo
           entryRationale: entry.entryRationale,
           exitRationale: entry.exitRationale,
         })
-        
+        setSourcePnl({ pnl: entry.pnl, pnlPercentage: entry.pnlPercentage })
+
         // Set emotional state
         const emotionIndex = emotionalStates.findIndex(
           state => state.label === entry.emotionalState.label
         )
         setSelectedEmotion(emotionIndex >= 0 ? emotionIndex : null)
-        
+
         // Set tags
         setSelectedTags(entry.tags)
       }
@@ -101,7 +104,7 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: Jo
         assetPair: `${trade.symbol}-PERP`,
         direction: trade.side,
         entryPrice: trade.entryPrice,
-        exitPrice: "",
+        exitPrice: trade.exitPrice,
         positionSize: trade.size,
         positionUnit: trade.symbol,
         tradeDate: new Date().toISOString().slice(0, 16),
@@ -110,6 +113,7 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: Jo
         entryRationale: "",
         exitRationale: "",
       })
+      setSourcePnl({ pnl: trade.pnl, pnlPercentage: trade.pnlPercentage })
       setSelectedEmotion(null)
       setSelectedTags([])
     } else {
@@ -127,18 +131,19 @@ export function JournalEntryModal({ isOpen, onClose, editingEntryId, trade }: Jo
         entryRationale: "",
         exitRationale: "",
       })
+      setSourcePnl(null)
       setSelectedEmotion(null)
       setSelectedTags([])
     }
   }, [editingEntryId, trade, isOpen])
 
-  // Calculate P&L with direction
+  // Use source PnL (net of fees) when available, otherwise calculate from form fields
   const entryPrice = parseFloat(formData.entryPrice) || 0
   const exitPrice = parseFloat(formData.exitPrice) || 0
   const positionSize = parseFloat(formData.positionSize) || 0
   const sign = formData.direction === "short" ? -1 : 1
-  const pnlAmount = sign * (exitPrice - entryPrice) * positionSize
-  const pnlPercent = entryPrice > 0 ? sign * ((exitPrice - entryPrice) / entryPrice) * 100 : 0
+  const pnlAmount = sourcePnl ? sourcePnl.pnl : sign * (exitPrice - entryPrice) * positionSize
+  const pnlPercent = sourcePnl ? sourcePnl.pnlPercentage : (entryPrice > 0 ? sign * ((exitPrice - entryPrice) / entryPrice) * 100 : 0)
   const isProfit = pnlAmount >= 0
 
   const handleTagToggle = (tag: string) => {
