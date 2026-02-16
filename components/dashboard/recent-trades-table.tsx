@@ -117,6 +117,7 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
     side: "long" | "short"
     size: string
     entryPrice: string
+    exitPrice: string
     symbol: string
     pnl: number
     pnlPercentage: number
@@ -173,7 +174,16 @@ export function RecentTradesTable({ trades }: RecentTradesTableProps): React.Rea
   }, [recentTrades, sortKey, sortDir])
 
   const handleJournalClick = (trade: DisplayTrade) => {
-    setSelectedTrade(trade)
+    setSelectedTrade({
+      pair: trade.pair,
+      side: trade.side,
+      size: trade.size,
+      entryPrice: trade.entryPriceNum.toString(),
+      exitPrice: trade.exitPriceNum.toString(),
+      symbol: trade.symbol,
+      pnl: trade.pnl,
+      pnlPercentage: trade.pnlPercentage,
+    })
     setIsModalOpen(true)
   }
 

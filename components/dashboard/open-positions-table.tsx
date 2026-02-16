@@ -4,19 +4,10 @@ import { useState, useMemo } from "react"
 import { X, SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Trade } from "@/lib/mock/trades"
 import { useFilters } from "@/hooks/use-filters"
+import { usePositionsStore } from "@/stores/positions-store"
 import { ClosePositionDialog } from "@/components/dashboard/close-position-dialog"
 import { AdjustMarginDialog } from "@/components/dashboard/adjust-margin-dialog"
-
-// Deterministic margin percent generator (5-20%) based on trade data
-function getDeterministicMarginPercent(trade: Trade): number {
-  // Use trade properties to generate a deterministic value between 5-20%
-  const hash = trade.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  const sizeHash = trade.size.toString().split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  const combined = (hash + sizeHash) % 1000
-  return 5 + (combined / 1000) * 15 // Range: 5-20%
-}
 
 // Mock data for open positions with liquidation and margin data
 export interface Position {
@@ -32,69 +23,6 @@ export interface Position {
   pnlPositive: boolean
   pnlUsd: number
   funding: number
-}
-
-const defaultOpenPositions: Position[] = [
-  {
-    pair: "BTC/USD",
-    side: "long",
-    size: "0.5",
-    positionValue: 0.5 * 49200,
-    entryPrice: 48500,
-    currentPrice: 49200,
-    liqPrice: 45200,
-    marginPercent: 12.3,
-    pnl: "+12.0%",
-    pnlPositive: true,
-    pnlUsd: 350,
-    funding: -12.50
-  },
-  {
-    pair: "ETH/USD",
-    side: "short",
-    size: "2.0",
-    positionValue: 2.0 * 3190,
-    entryPrice: 3219,
-    currentPrice: 3190,
-    liqPrice: 3350,
-    marginPercent: 8.5,
-    pnl: "-2.8%",
-    pnlPositive: false,
-    pnlUsd: -58,
-    funding: 8.30
-  },
-  {
-    pair: "SOL/USD",
-    side: "long",
-    size: "50",
-    positionValue: 50 * 102.30,
-    entryPrice: 98.50,
-    currentPrice: 102.30,
-    liqPrice: 89.20,
-    marginPercent: 15.7,
-    pnl: "+3.9%",
-    pnlPositive: true,
-    pnlUsd: 190,
-    funding: -5.20
-  },
-  {
-    pair: "XRP/USD",
-    side: "long",
-    size: "1000",
-    positionValue: 1000 * 0.48,
-    entryPrice: 0.52,
-    currentPrice: 0.48,
-    liqPrice: 0.465,
-    marginPercent: 5.2,
-    pnl: "-7.7%",
-    pnlPositive: false,
-    pnlUsd: -40,
-    funding: -1.80
-  },
-]
-
-interface OpenPositionsTableProps {
-  trades?: Trade[]
 }
 
 // Calculate liquidation risk based on distance from current price
@@ -194,8 +122,9 @@ function SortableHeader({ label, sortKey, activeKey, direction, onSort, align = 
   )
 }
 
-export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
+export function OpenPositionsTable() {
   const { filters } = useFilters()
+  const storePositions = usePositionsStore((s) => s.positions)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>("asc")
   const [closingPosition, setClosingPosition] = useState<Position | null>(null)
@@ -210,46 +139,11 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
     }
   }
 
-  // Use provided trades or fallback to default mock data
-  // For open positions, we simulate positions from the trades data
-  const rawPositions = useMemo<Position[]>(() => {
-    if (trades && trades.length > 0) {
-      return trades.slice(0, 4).map((trade) => {
-        const side = trade.side as "long" | "short"
-        const currentPrice = trade.exitPrice
-        const entryPrice = trade.entryPrice
-        // Simulate liquidation price (for longs: lower than entry, for shorts: higher than entry)
-        const liqPrice = side === "long"
-          ? entryPrice * 0.85
-          : entryPrice * 1.15
-        const marginPercent = getDeterministicMarginPercent(trade) // Deterministic margin between 5-20%
-        const pnlUsd = trade.pnl
-        const positionValue = trade.size * currentPrice
-
-        return {
-          pair: `${trade.symbol}/USD`,
-          side,
-          size: trade.size.toString(),
-          positionValue,
-          entryPrice,
-          currentPrice,
-          liqPrice,
-          marginPercent,
-          pnl: `${trade.pnlPercentage >= 0 ? '+' : ''}${trade.pnlPercentage.toFixed(1)}%`,
-          pnlPositive: trade.pnlPercentage >= 0,
-          pnlUsd,
-          funding: trade.fees.funding,
-        }
-      })
-    }
-    return defaultOpenPositions
-  }, [trades])
-
   const filteredPositions = useMemo(() => {
-    if (filters.tradeType === "long") return rawPositions.filter(p => p.side === "long")
-    if (filters.tradeType === "short") return rawPositions.filter(p => p.side === "short")
-    return rawPositions
-  }, [rawPositions, filters.tradeType])
+    if (filters.tradeType === "long") return storePositions.filter(p => p.side === "long")
+    if (filters.tradeType === "short") return storePositions.filter(p => p.side === "short")
+    return storePositions
+  }, [storePositions, filters.tradeType])
 
   const positions = useMemo(() => {
     if (!sortKey) return filteredPositions
@@ -284,10 +178,10 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
               <SortableHeader label="Position Value" sortKey="positionValue" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Entry" sortKey="entryPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Mark Price" sortKey="currentPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-              <SortableHeader label="PNL" sortKey="pnlUsd" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
+              <SortableHeader label="Funding" sortKey="funding" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
               <SortableHeader label="Liq Price" sortKey="liqPrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
               <SortableHeader label="Margin" sortKey="margin" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-              <SortableHeader label="Funding" sortKey="funding" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
+              <SortableHeader label="PNL" sortKey="pnlUsd" activeKey={sortKey} direction={sortDir} onSort={handleSort} align="right" />
               <th className="px-5 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -316,18 +210,10 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
                   <td className="px-5 py-3 text-sm font-mono text-foreground">${position.entryPrice.toLocaleString()}</td>
                   <td className="px-5 py-3 text-sm font-mono text-foreground">${position.currentPrice.toLocaleString()}</td>
                   <td className={cn(
-                    "px-5 py-3 text-right",
-                    position.pnlPositive ? "text-emerald-500" : "text-rose-500"
+                    "px-5 py-3 text-right text-sm font-mono",
+                    position.funding >= 0 ? "text-emerald-500" : "text-rose-500"
                   )}>
-                    <div className="flex flex-col items-end">
-                      <span className="text-sm font-mono font-medium">{position.pnl}</span>
-                      <span className={cn(
-                        "text-xs font-mono mt-0.5",
-                        position.pnlPositive ? "text-emerald-500" : "text-rose-500"
-                      )}>
-                        {position.pnlPositive ? '+$' : '-$'}{Math.abs(position.pnlUsd).toLocaleString()}
-                      </span>
-                    </div>
+                    {position.funding >= 0 ? '+$' : '-$'}{Math.abs(position.funding).toFixed(2)}
                   </td>
                   <td className="px-5 py-3">
                     <span className={cn(
@@ -346,10 +232,18 @@ export function OpenPositionsTable({ trades }: OpenPositionsTableProps) {
                   </td>
                   <td className="px-5 py-3 text-sm font-mono text-foreground">${(position.positionValue * position.marginPercent / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   <td className={cn(
-                    "px-5 py-3 text-right text-sm font-mono",
-                    position.funding >= 0 ? "text-emerald-500" : "text-rose-500"
+                    "px-5 py-3 text-right",
+                    position.pnlPositive ? "text-emerald-500" : "text-rose-500"
                   )}>
-                    {position.funding >= 0 ? '+$' : '-$'}{Math.abs(position.funding).toFixed(2)}
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-mono font-medium">{position.pnl}</span>
+                      <span className={cn(
+                        "text-xs font-mono mt-0.5",
+                        position.pnlPositive ? "text-emerald-500" : "text-rose-500"
+                      )}>
+                        {position.pnlPositive ? '+$' : '-$'}{Math.abs(position.pnlUsd).toLocaleString()}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-center gap-2">

@@ -239,9 +239,9 @@ export function generateMockJournalEntries(): JournalEntry[] {
 // Export mock data
 export const mockJournalEntries = generateMockJournalEntries()
 
-// Helper function to get a single journal entry by trade ID
-export function getJournalEntryByTradeId(tradeId: string): JournalEntry | undefined {
-  return mockJournalEntries.find(entry => entry.tradeId === tradeId)
+// Helper function to get a single journal entry by trade ID or journal entry ID
+export function getJournalEntryByTradeId(id: string): JournalEntry | undefined {
+  return mockJournalEntries.find(entry => entry.tradeId === id || entry.id === id)
 }
 
 // Helper function to format duration

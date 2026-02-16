@@ -75,44 +75,42 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748B", fontSize: 12 }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748B", fontSize: 12 }}
-                    tickFormatter={(value) => formatCurrency(value)}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#161a25",
-                      border: "1px solid #1e2433",
-                      borderRadius: "6px",
-                    }}
-                    labelStyle={{ color: "#FFFFFF" }}
-                    itemStyle={{ color: "#FFFFFF" }}
-                    formatter={(value: number) => [formatCurrency(value), "PnL"]}
-                  />
-                  <Bar
-                    dataKey="pnl"
-                    radius={[4, 4, 0, 0]}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.pnl >= 0 ? "#10B981" : "#EF4444"}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                  tickFormatter={(value) => formatCurrency(value)}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                  }}
+                  labelStyle={{ color: "var(--foreground)" }}
+                  itemStyle={{ color: "var(--foreground)" }}
+                  formatter={(value: number) => [formatCurrency(value), "PnL"]}
+                />
+                <Bar
+                  dataKey="pnl"
+                  radius={[4, 4, 0, 0]}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.pnl >= 0 ? "#10B981" : "#EF4444"}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -127,45 +125,41 @@ export function OrderTypeAnalysis({ trades }: OrderTypeAnalysisProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px]">
-                <ChartContainer config={chartConfig} className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={distribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {distribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="middle"
-                        align="right"
-                        layout="vertical"
-                        iconType="circle"
-                        iconSize={8}
-                        formatter={(value, entry: any) => {
-                          const item = distribution.find((d) => d.name === value)
-                          return (
-                            <span className="text-sm text-foreground">
-                              {value}{" "}
-                              <span className="text-muted-foreground">
-                                {item?.percentage}%
-                              </span>
-                            </span>
-                          )
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
+              <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <PieChart>
+                  <Pie
+                    data={distribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {distribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="middle"
+                    align="right"
+                    layout="vertical"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => {
+                      const item = distribution.find((d) => d.name === value)
+                      return (
+                        <span className="text-sm text-foreground">
+                          {value}{" "}
+                          <span className="text-muted-foreground">
+                            {item?.percentage}%
+                          </span>
+                        </span>
+                      )
+                    }}
+                  />
+                </PieChart>
+              </ChartContainer>
             </CardContent>
           </Card>
 

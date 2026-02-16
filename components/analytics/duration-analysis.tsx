@@ -42,34 +42,32 @@ export function DurationAnalysis({ trades }: DurationAnalysisProps) {
 
         {/* Distribution Histogram */}
         <ChartContainer config={{}} className="h-[180px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={distribution} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
-              <XAxis
-                dataKey="range"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 11 }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 11 }}
-                allowDecimals={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#161a25",
-                  border: "1px solid #1e2433",
-                  borderRadius: "6px",
-                }}
-                labelStyle={{ color: "#FFFFFF" }}
-                itemStyle={{ color: "#FFFFFF" }}
-                formatter={(value: number) => [`${value} trades`, "Count"]}
-              />
-              <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <BarChart data={distribution} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
+            <XAxis
+              dataKey="range"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              allowDecimals={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "var(--popover)",
+                border: "1px solid var(--border)",
+                borderRadius: "6px",
+              }}
+              labelStyle={{ color: "var(--foreground)" }}
+              itemStyle={{ color: "var(--foreground)" }}
+              formatter={(value: number) => [`${value} trades`, "Count"]}
+            />
+            <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+          </BarChart>
         </ChartContainer>
 
         {/* By Direction */}
