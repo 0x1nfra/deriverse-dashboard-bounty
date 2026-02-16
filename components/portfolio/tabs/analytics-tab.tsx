@@ -104,17 +104,21 @@ export function AnalyticsTabContent() {
   const feeMetrics = useMemo(() => getFeeMetrics(filteredTrades), [filteredTrades])
   const dailyVolumeData = useMemo(() => getDailyVolumeData(filteredTrades, volumeDays), [filteredTrades, volumeDays])
 
-  const feeBreakdownData = useMemo(() => [
-    { name: "Maker", value: feeMetrics.makerFees, color: "#5471f6" },
-    { name: "Taker", value: feeMetrics.takerFees, color: "#38bdf8" },
-    { name: "Funding", value: feeMetrics.fundingFees, color: "#a78bfa" },
-  ], [feeMetrics])
+  const volumeChartConfig = {
+    volume: { label: "Volume", color: "var(--primary)" },
+  }
 
   const feeChartConfig = {
     maker: { label: "Maker", color: "#5471f6" },
     taker: { label: "Taker", color: "#38bdf8" },
     funding: { label: "Funding", color: "#a78bfa" },
   }
+
+  const feeBreakdownData = useMemo(() => [
+    { name: "Maker", value: feeMetrics.makerFees, color: "#5471f6" },
+    { name: "Taker", value: feeMetrics.takerFees, color: "#38bdf8" },
+    { name: "Funding", value: feeMetrics.fundingFees, color: "#a78bfa" },
+  ], [feeMetrics])
 
   return (
     <div className="space-y-6">
@@ -178,41 +182,39 @@ export function AnalyticsTabContent() {
             </div>
           </div>
           <div className="p-5">
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748B", fontSize: 12 }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748B", fontSize: 12 }}
-                    tickFormatter={(value) => formatCurrency(value)}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#161a25",
-                      border: "1px solid #1e2433",
-                      borderRadius: "6px",
-                    }}
-                    labelStyle={{ color: "#FFFFFF" }}
-                    itemStyle={{ color: "#FFFFFF" }}
-                    formatter={(value: number) => [formatCurrency(value), "Volume"]}
-                  />
-                  <Bar
-                    dataKey="volume"
-                    fill="var(--primary)"
-                    radius={[4, 4, 0, 0]}
-                    activeBar={{ fill: "var(--primary)", fillOpacity: 0.7 }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer config={volumeChartConfig} className="h-[300px] w-full">
+              <BarChart data={dailyVolumeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                  tickFormatter={(value) => formatCurrency(value)}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                  }}
+                  labelStyle={{ color: "var(--foreground)" }}
+                  itemStyle={{ color: "var(--foreground)" }}
+                  formatter={(value: number) => [formatCurrency(value), "Volume"]}
+                />
+                <Bar
+                  dataKey="volume"
+                  fill="var(--primary)"
+                  radius={[4, 4, 0, 0]}
+                  activeBar={{ fill: "var(--primary)", fillOpacity: 0.7 }}
+                />
+              </BarChart>
+            </ChartContainer>
           </div>
         </div>
 
@@ -223,7 +225,6 @@ export function AnalyticsTabContent() {
           </div>
           <div className="p-5">
             <ChartContainer config={feeChartConfig} className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={feeBreakdownData}
@@ -254,7 +255,6 @@ export function AnalyticsTabContent() {
                     }}
                   />
                 </PieChart>
-              </ResponsiveContainer>
             </ChartContainer>
 
             {/* Fee Impact */}
