@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { usePositionsStore } from "@/stores/positions-store"
 import type { Position } from "./open-positions-table"
 
 interface AdjustMarginDialogProps {
@@ -22,6 +23,7 @@ interface AdjustMarginDialogProps {
 }
 
 export function AdjustMarginDialog({ open, onOpenChange, position }: AdjustMarginDialogProps) {
+  const adjustMargin = usePositionsStore((s) => s.adjustMargin)
   const [mode, setMode] = useState<"add" | "remove">("add")
   const [amount, setAmount] = useState("")
 
@@ -160,12 +162,7 @@ export function AdjustMarginDialog({ open, onOpenChange, position }: AdjustMargi
           <Button
             disabled={amountNum <= 0 || (mode === "remove" && amountNum > currentMargin)}
             onClick={() => {
-              console.log("Adjust margin:", {
-                pair: position.pair,
-                mode,
-                amount: amountNum,
-                newMargin: preview.newMargin,
-              })
+              adjustMargin(position.pair, mode, amountNum)
               onOpenChange(false)
             }}
           >

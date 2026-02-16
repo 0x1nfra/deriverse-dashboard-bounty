@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { usePositionsStore } from "@/stores/positions-store"
 import type { Position } from "./open-positions-table"
 
 interface ClosePositionDialogProps {
@@ -23,6 +24,7 @@ interface ClosePositionDialogProps {
 }
 
 export function ClosePositionDialog({ open, onOpenChange, position }: ClosePositionDialogProps) {
+  const closePosition = usePositionsStore((s) => s.closePosition)
   const [closeType, setCloseType] = useState<"market" | "limit">("market")
   const [limitPrice, setLimitPrice] = useState(position.currentPrice.toString())
   const [closePercent, setClosePercent] = useState(100)
@@ -199,13 +201,7 @@ export function ClosePositionDialog({ open, onOpenChange, position }: ClosePosit
             variant="destructive"
             disabled={closePercent === 0}
             onClick={() => {
-              console.log("Close position:", {
-                pair: position.pair,
-                closeType,
-                closePercent,
-                closeSize,
-                limitPrice: closeType === "limit" ? parseFloat(limitPrice) : undefined,
-              })
+              closePosition(position.pair, closePercent)
               onOpenChange(false)
             }}
           >

@@ -1,0 +1,58 @@
+[
+  {
+    "pair": "BTC/USD",
+    "side": "long",
+    "size": "0.5",
+    "positionValue": 24600,
+    "entryPrice": 48500,
+    "currentPrice": 49200,
+    "liqPrice": 45200,
+    "marginPercent": 12.3,
+    "pnl": "+12.0%",
+    "pnlPositive": true,
+    "pnlUsd": 350,
+    "funding": -12.50
+  },
+  {
+    "pair": "ETH/USD",
+    "side": "short",
+    "size": "2.0",
+    "positionValue": 6380,
+    "entryPrice": 3219,
+    "currentPrice": 3190,
+    "liqPrice": 3350,
+    "marginPercent": 8.5,
+    "pnl": "+0.9%",
+    "pnlPositive": true,
+    "pnlUsd": 58,
+    "funding": 8.30
+  },
+  {
+    "pair": "SOL/USD",
+    "side": "long",
+    "size": "50",
+    "positionValue": 5115,
+    "entryPrice": 98.50,
+    "currentPrice": 102.30,
+    "liqPrice": 89.20,
+    "marginPercent": 15.7,
+    "pnl": "+3.9%",
+    "pnlPositive": true,
+    "pnlUsd": 190,
+    "funding": -5.20
+  },
+  {
+    "pair": "XRP/USD",
+    "side": "long",
+    "size": "1000",
+    "positionValue": 480,
+    "entryPrice": 0.52,
+    "currentPrice": 0.48,
+    "liqPrice": 0.465,
+    "marginPercent": 5.2,
+    "pnl": "-7.7%",
+    "pnlPositive": false,
+    "pnlUsd": -40,
+    "funding": -1.80
+  }
+]
